@@ -5,6 +5,7 @@
       "baseline_id": "deterministic-attestation-v1",
       "type": "deterministic-attestation",
       "implementation": "baselines/deterministic.py",
+      "entrypoint": "experiment_ledger.adapters.cfyow_exp001:run_deterministic",
       "version": "repository-source",
       "configuration_hash": "computed-at-run",
       "dependency_fingerprint": "computed-at-run",
@@ -17,7 +18,8 @@
     {
       "baseline_id": "centralized-adjudicator-v1",
       "type": "centralized-semantic-adjudicator",
-      "implementation": "baselines/centralized_adjudicator.py",
+      "implementation": "baselines/centralized.py",
+      "entrypoint": "experiment_ledger.adapters.cfyow_exp001:run_centralized",
       "version": "repository-source",
       "configuration_hash": "computed-at-run",
       "dependency_fingerprint": "computed-at-run",
