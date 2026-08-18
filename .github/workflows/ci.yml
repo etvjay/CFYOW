@@ -17,6 +17,8 @@ jobs:
           python-version: "3.12"
       - run: pip install -r requirements.txt
       - run: genvm-lint check contracts/judgment_boundary.py
+      - run: genvm-lint check contracts/consequence_parent.py
+      - run: genvm-lint check contracts/consequence_sink.py
 
   test-baselines:
     name: Baseline unit tests
