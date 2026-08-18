@@ -8,9 +8,9 @@ on:
         required: false
         default: "1"
       appeal_value:
-        description: "Appeal bond/value override"
+        description: "Optional positive appeal bond override; blank uses network minimum"
         required: false
-        default: "0"
+        default: ""
   push:
     branches: ["research/experiment-ledger-v1"]
     paths:
@@ -32,7 +32,7 @@ jobs:
     timeout-minutes: 25
     env:
       EXP003_REQUIRE_APPEAL: ${{ github.event_name == 'workflow_dispatch' && inputs.require_appeal || '0' }}
-      EXP003_APPEAL_VALUE: ${{ github.event_name == 'workflow_dispatch' && inputs.appeal_value || '0' }}
+      EXP003_APPEAL_VALUE: ${{ github.event_name == 'workflow_dispatch' && inputs.appeal_value || '' }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
