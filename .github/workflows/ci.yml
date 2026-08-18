@@ -29,6 +29,30 @@ jobs:
       - run: pip install -r requirements.txt
       - run: pytest tests/unit -v
 
+  experiment-ledger:
+    name: Experiment Ledger capture
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Capture every EXP-001 baseline
+        run: >-
+          python -m experiment_ledger run
+          experiments/EXP-001-judgment-boundary/baseline-manifest.json
+          --run-id ci-baseline-calibration
+          --output results/EXP-001-baseline-calibration/runs/ci-baseline-calibration.json
+      - name: Validate capture
+        run: >-
+          python -m experiment_ledger validate
+          results/EXP-001-baseline-calibration/runs/ci-baseline-calibration.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: experiment-ledger-exp001-baselines
+          path: results/EXP-001-baseline-calibration/runs/ci-baseline-calibration.json
+
   test-direct:
     name: GenLayer direct-mode tests
     runs-on: ubuntu-latest
