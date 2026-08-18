@@ -24,8 +24,38 @@ child.emit(on="finalized").record_completion(case_id)
 
 Where the environment permits, produce an appeal/re-execution path that changes or repeats the parent execution.
 
+## Network evidence capture
+
+Every live transaction used by this experiment must be captured with Experiment Ledger:
+
+```bash
+python -m experiment_ledger capture-genlayer \
+  --rpc "$GENLAYER_RPC_URL" \
+  --tx "$TX_HASH" \
+  --contract "$PARENT_CONTRACT" \
+  --output "results/EXP-003/runs/$RUN_ID-parent.json"
+```
+
+Capture the child transaction separately when a stable/documented child-transaction identifier is available. Do not infer child execution count from the parent receipt unless the protocol/API provides explicit lineage.
+
+The parent capture records:
+
+- the distinct status path actually observed;
+- whether ACCEPTED was observed;
+- whether FINALIZED was observed;
+- appeal status/timestamp evidence;
+- consensus round count;
+- validator/vote/result-hash metadata exposed by the receipt;
+- accepted and finalized contract-state snapshots.
+
+A FINALIZED transaction does not retroactively count as an observed ACCEPTED state if the capture process started too late to see it.
+
 ## Metrics
 - time from parent submission to child effect;
+- accepted-to-finalized latency when both transitions are actually observed;
+- consensus round count;
+- appeal observed (boolean);
+- additional-round/re-execution signal;
 - duplicate child executions;
 - stale/invalid child effects after appeal;
 - idempotency state required;
