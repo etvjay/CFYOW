@@ -2,6 +2,7 @@
 
 Examples:
     python -m experiment_ledger run experiments/EXP-001-judgment-boundary/baseline-manifest.json
+    python -m experiment_ledger capture-genlayer --rpc http://localhost:9151 --tx 0x...
 """
 
 from __future__ import annotations
@@ -10,6 +11,7 @@ import argparse
 import json
 from pathlib import Path
 
+from .adapters.genlayer_network import capture_transaction_lifecycle
 from .core import write_run
 from .manifest import build_run_from_manifest
 
@@ -29,6 +31,16 @@ def main() -> int:
     validate_parser = sub.add_parser("validate", help="perform structural validation")
     validate_parser.add_argument("run_json")
 
+    network_parser = sub.add_parser(
+        "capture-genlayer", help="capture observable GenLayer transaction lifecycle evidence"
+    )
+    network_parser.add_argument("--rpc", required=True)
+    network_parser.add_argument("--tx", required=True)
+    network_parser.add_argument("--contract", default=None)
+    network_parser.add_argument("--poll-interval", type=float, default=1.0)
+    network_parser.add_argument("--max-polls", type=int, default=180)
+    network_parser.add_argument("--output", default=None)
+
     args = parser.parse_args()
 
     if args.command == "run":
@@ -38,6 +50,24 @@ def main() -> int:
         path = write_run(payload, output)
         print(path)
         return 0 if payload["status"] != "INVALID_RUN" else 2
+
+    if args.command == "capture-genlayer":
+        payload = capture_transaction_lifecycle(
+            args.rpc,
+            args.tx,
+            contract_address=args.contract,
+            poll_interval_s=args.poll_interval,
+            max_polls=args.max_polls,
+        )
+        output = args.output or f"results/genlayer-network/{args.tx}.json"
+        path = Path(output)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        print(path)
+        return 0 if payload.get("status") == "SUCCESS" else 2
 
     payload = json.loads(Path(args.run_json).read_text(encoding="utf-8"))
     errors = validate_run_structure(payload)
