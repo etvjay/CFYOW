@@ -18,6 +18,7 @@ from gltest import get_contract_factory, get_validator_factory
 from gltest.assertions import tx_execution_succeeded
 from gltest.types import MockedLLMResponse, TransactionStatus
 
+from experiment_ledger.adapters.exp003_consequence import normalize_consequence_stability
 from experiment_ledger.adapters.genlayer_children import capture_child_lineage
 
 pytestmark = pytest.mark.integration
@@ -117,11 +118,20 @@ def test_appeal_reexecution_captures_provisional_duplicate_evidence(gl_client):
     }
     _write_artifact("appeal-duplicate-after.json", after_appeal)
 
+    metrics = normalize_consequence_stability(
+        before_appeal,
+        after_appeal,
+        final_judgment_satisfied=True,
+    )
+    metrics["parent_transaction_hash"] = parent_tx
+    _write_artifact("appeal-duplicate-metrics.json", metrics)
+
     assert tx_execution_succeeded(appealed_receipt)
     assert after_appeal["provisional"]["applied"] is True
     assert after_appeal["settled"]["applied"] is True
 
     # The main measured variable. A duplicate is evidence only if the network actually
     # re-delivered the accepted child; we do not force the assertion to be > 0 here.
-    assert after_appeal["provisional"]["duplicate_count"] >= 0
-    assert after_appeal["settled"]["duplicate_count"] >= 0
+    assert metrics["metrics"]["provisional_duplicate_delta"] >= 0
+    assert metrics["metrics"]["settled_duplicate_delta"] >= 0
+    assert metrics["interpretation"]["status"] == "UNREVIEWED"
