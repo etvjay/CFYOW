@@ -1,0 +1,50 @@
+name: EXP-003 Studionet Evidence
+
+on:
+  workflow_dispatch:
+    inputs:
+      require_appeal:
+        description: "Fail rather than skip if appeal cannot execute"
+        required: false
+        default: "1"
+      appeal_value:
+        description: "Appeal bond/value override"
+        required: false
+        default: "0"
+  push:
+    branches: ["research/experiment-ledger-v1"]
+    paths:
+      - "contracts/consequence_*.py"
+      - "tests/integration/test_exp003_*.py"
+      - "experiment_ledger/adapters/genlayer_*.py"
+      - "gltest.config.yaml"
+      - ".github/workflows/exp003-network.yml"
+
+jobs:
+  appeal-reexecution:
+    name: Appeal re-execution capture
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      EXP003_REQUIRE_APPEAL: ${{ github.event_name == 'workflow_dispatch' && inputs.require_appeal || '0' }}
+      EXP003_APPEAL_VALUE: ${{ github.event_name == 'workflow_dispatch' && inputs.appeal_value || '0' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+      - run: pip install -r requirements.txt
+      - name: Run EXP-003 against hosted Studionet
+        run: >-
+          gltest tests/integration/test_exp003_appeal_reexecution.py
+          -v -s --network studionet
+          --default-wait-retries 60
+      - name: Upload EXP-003 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: exp003-studionet-evidence-${{ github.run_id }}
+          path: artifacts/EXP-003/
+          if-no-files-found: warn
+          retention-days: 30
