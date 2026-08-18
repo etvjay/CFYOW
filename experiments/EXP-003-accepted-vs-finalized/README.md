@@ -1,7 +1,7 @@
 # EXP-003 — Accepted World vs Final World
 
 ## Status
-**Executable harness implemented; appeal/re-execution evidence still requires a live Studio/testnet run.**
+**Executable harness implemented; two Studionet evidence runs are wired. No stale-world claim is promoted until a live artifact reproduces it.**
 
 ## Research question
 What application-level failures appear when downstream coordination acts on `accepted` state instead of waiting for `finalized` state?
@@ -9,10 +9,73 @@ What application-level failures appear when downstream coordination acts on `acc
 ## Protocol fact being tested
 GenLayer internal IC messages may be emitted on `accepted` or `finalized`. Accepted messages can execute before the appeal window closes; re-execution can emit duplicates, and a later appeal can make an already executed child message inconsistent with the final parent outcome. External IC→EVM messages are finalized-only.
 
-## Implemented topology
+## Experiment family
+
+EXP-003 is intentionally split into two sub-experiments because duplicate delivery and stale semantic consequence are different phenomena.
+
+### EXP-003A — Appeal-induced duplicate delivery
 
 ```text
-ConsequenceParent.resolve_case(...)
+semantic judgment remains true
+        |
+     ACCEPTED
+        |
+provisional consequence
+        |
+      appeal
+        |
+re-execution remains true
+        |
+     FINALIZED
+```
+
+Question: does the accepted-timing consequence get delivered more than once during appeal/re-execution?
+
+Implementation:
+- `contracts/consequence_parent.py`
+- `tests/integration/test_exp003_appeal_reexecution.py`
+
+The test does **not** require a duplicate to occur. It captures the duplicate delta the network actually produces.
+
+### EXP-003B — Semantic overturn under changed external evidence
+
+```text
+public evidence = SATISFIED
+        |
+same transaction reaches ACCEPTED
+        |
+provisional consequence applies
+        |
+external evidence changes to REVOKED
+        |
+      appeal
+        |
+same transaction re-executes
+        |
+final semantic judgment may become false
+        |
+FINALIZED consequence absent if false
+```
+
+Question: can a consequence legitimately applied in the provisional world become inconsistent with the final shared world when external evidence changes during the appeal window?
+
+Implementation:
+- `contracts/consequence_evidence_parent.py`
+- mutable public evidence fixture: repository issue #3
+- `tests/integration/test_exp003_semantic_overturn.py`
+
+The same transaction calldata, contract code, and criterion are preserved across rounds. The experiment changes only the public external evidence before the appeal re-execution. Validator mocks are deliberately not swapped between rounds.
+
+A stale consequence is counted only when all of the following are observed:
+1. provisional sink applied the positive consequence after ACCEPTED;
+2. external evidence changed before appeal re-execution;
+3. the final re-execution does not produce the positive settled consequence;
+4. the provisional consequence remains present.
+
+## Shared topology
+
+```text
+Parent.resolve_case(...)
         |
         | semantic judgment = satisfied
         |
@@ -21,18 +84,17 @@ ConsequenceParent.resolve_case(...)
         +---- on="finalized" ---> settled ConsequenceSink
 ```
 
-The same positive semantic decision is emitted to two separate sinks. Each sink is idempotent and records total delivery attempts, unique consequences applied, per-case attempts, per-case duplicate count, first sender, and payload.
-
-The parent emits **nothing** when the consensus result is `satisfied = false`. Therefore, if an accepted round emits a positive consequence and a later appeal changes the eventual result to negative, the provisional sink exposes a stale consequence while the settled sink should receive no corresponding finalized consequence.
+Each sink is idempotent and records total delivery attempts, unique consequences applied, per-case attempts, duplicate count, first sender, and payload.
 
 ## Contracts
 
-- `contracts/consequence_parent.py` — semantic parent and timing split.
-- `contracts/consequence_sink.py` — idempotent evidence sink.
+- `contracts/consequence_parent.py` — constant-evidence semantic parent for EXP-003A.
+- `contracts/consequence_evidence_parent.py` — re-fetches current public evidence on every execution for EXP-003B.
+- `contracts/consequence_sink.py` — idempotent application-level evidence sink.
 
 ## Network evidence capture
 
-Every live parent transaction used by this experiment must be captured with Experiment Ledger:
+Every live parent transaction used by this experiment should also be capturable through Experiment Ledger:
 
 ```bash
 python -m experiment_ledger capture-genlayer \
@@ -58,10 +120,12 @@ Verifies idempotency and duplicate accounting. Direct mode is not evidence about
 ### Studio/network smoke test
 `tests/integration/test_exp003_consequence_stability.py`
 
-Validates that a positive parent decision can eventually reach both sinks after finalization. This is wiring validation, not the appeal experiment itself.
+Validates that a positive parent decision can eventually reach both sinks after finalization. This is wiring validation, not an appeal result.
 
-### Appeal/re-execution run
-The research run must create or observe a parent transaction that enters an appeal/additional consensus round where possible. No claim about stale provisional state is made unless such a lifecycle is actually captured.
+### Studionet evidence workflow
+`.github/workflows/exp003-network.yml`
+
+Runs EXP-003A and EXP-003B, restores the mutable evidence fixture in an `always()` cleanup step, and uploads `artifacts/EXP-003/` regardless of whether the appeal phase succeeds.
 
 ## Metrics
 - time from parent submission to first observed `ACCEPTED`;
@@ -74,7 +138,9 @@ The research run must create or observe a parent transaction that enters an appe
 - provisional sink delivery attempts;
 - settled sink delivery attempts;
 - duplicate attempts by sink;
-- stale provisional effects after a changed final outcome;
+- provisional duplicate delta after appeal;
+- settled duplicate delta after appeal;
+- stale provisional consequence observed (boolean, evidence-gated);
 - idempotency state required;
 - compensation actions required;
 - debugging steps needed to reconstruct parent/child lineage.
@@ -88,12 +154,23 @@ Consequence Stability(case) =
   1 - stale_or_duplicate_irreversible_effects / consequential_effect_attempts
 ```
 
-This formula is provisional. It must not be promoted into a general metric until experiment results establish that its numerator and denominator are meaningful across workflows.
+This formula is provisional. It must not be promoted into a general metric until experiment results establish that its numerator and denominator are meaningful across workflows. A vector representation may prove more rigorous:
+
+```text
+CS = {
+  finality_latency,
+  stale_effect_rate,
+  duplicate_rate,
+  compensation_cost,
+  reversibility
+}
+```
 
 ## Falsifiers
 - accepted/finalized produces no meaningful application difference beyond latency;
 - robust idempotency/compensation makes provisional execution effectively costless for the tested workflow;
 - appeals/additional rounds do not create measurable stale or duplicate effects in the tested scenarios;
+- changing external evidence does not produce a reproducible semantic overturn under the tested criterion;
 - the chosen environment cannot reproduce the relevant appeal/re-execution behavior, in which case no empirical claim is made.
 
 ## Safety invariant
