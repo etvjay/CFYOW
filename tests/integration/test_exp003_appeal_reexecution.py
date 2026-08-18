@@ -19,6 +19,7 @@ from gltest.assertions import tx_execution_succeeded
 from gltest.types import MockedLLMResponse, TransactionStatus
 
 from experiment_ledger.adapters.exp003_consequence import normalize_consequence_stability
+from experiment_ledger.adapters.genlayer_appeal import resolve_appeal_bond
 from experiment_ledger.adapters.genlayer_children import capture_child_lineage
 
 pytestmark = pytest.mark.integration
@@ -76,19 +77,36 @@ def test_appeal_reexecution_captures_provisional_duplicate_evidence(gl_client):
     assert tx_execution_succeeded(receipt)
 
     parent_tx = _tx_id(receipt)
+    override = os.getenv("EXP003_APPEAL_VALUE") or None
+    try:
+        bond = resolve_appeal_bond(gl_client, parent_tx, override=override)
+    except Exception as exc:
+        _write_artifact(
+            "appeal-duplicate-failure.json",
+            {
+                "status": "INVALID_RUN",
+                "phase": "appeal_bond_resolution",
+                "parent_transaction_hash": parent_tx,
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+                "appeal_override": override,
+            },
+        )
+        raise
+
     before_appeal = {
         "parent_receipt": receipt,
         "parent_lineage": capture_child_lineage(gl_client, parent_tx),
         "provisional": provisional_sink.get_record(args=["case-appeal-duplicate"]).call(),
         "settled": settled_sink.get_record(args=["case-appeal-duplicate"]).call(),
+        "appeal_bond": bond.to_dict(),
     }
     _write_artifact("appeal-duplicate-before.json", before_appeal)
 
-    appeal_value = int(os.getenv("EXP003_APPEAL_VALUE", "0"))
     try:
         appealed_receipt = parent.appeal(
             parent_tx,
-            value=appeal_value,
+            value=bond.value,
             wait_until="finalized",
             wait_retries=60,
         )
@@ -101,7 +119,7 @@ def test_appeal_reexecution_captures_provisional_duplicate_evidence(gl_client):
                 "parent_transaction_hash": parent_tx,
                 "error_type": type(exc).__name__,
                 "error": str(exc),
-                "appeal_value": appeal_value,
+                "appeal_bond": bond.to_dict(),
             },
         )
         if os.getenv("EXP003_REQUIRE_APPEAL", "0") == "1":
@@ -115,6 +133,7 @@ def test_appeal_reexecution_captures_provisional_duplicate_evidence(gl_client):
         "parent_lineage": capture_child_lineage(gl_client, parent_tx),
         "provisional": provisional_sink.get_record(args=["case-appeal-duplicate"]).call(),
         "settled": settled_sink.get_record(args=["case-appeal-duplicate"]).call(),
+        "appeal_bond": bond.to_dict(),
     }
     _write_artifact("appeal-duplicate-after.json", after_appeal)
 
@@ -124,6 +143,7 @@ def test_appeal_reexecution_captures_provisional_duplicate_evidence(gl_client):
         final_judgment_satisfied=True,
     )
     metrics["parent_transaction_hash"] = parent_tx
+    metrics["appeal_bond"] = bond.to_dict()
     _write_artifact("appeal-duplicate-metrics.json", metrics)
 
     assert tx_execution_succeeded(appealed_receipt)
