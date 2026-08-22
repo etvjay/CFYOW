@@ -15,12 +15,12 @@
     "status": "NO_RESULT",
     "step_outcome": "failure"
   },
-  "generated_at": "2026-08-22T23:00:16.439853+00:00",
+  "generated_at": "2026-08-22T23:17:09.474193+00:00",
   "github": {
     "ref": "refs/heads/research/experiment-ledger-v1",
     "run_attempt": "1",
-    "run_id": "32603990522",
-    "sha": "3f57edf0a2ff21d17fe16c3cacfa7027a132eaa9"
+    "run_id": "32604754410",
+    "sha": "80e30f13ab9b162ba6a6dab7b74382bd567ad166"
   },
   "interpretation": {
     "rule": "Persistent summary records observations; it does not promote research claims.",
