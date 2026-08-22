@@ -15,9 +15,9 @@ class ConsequenceEvidenceParent(gl.Contract):
     provisional_sink: Address
     settled_sink: Address
 
-    def __init__(self, provisional_sink: Address, settled_sink: Address):
-        self.provisional_sink = provisional_sink
-        self.settled_sink = settled_sink
+    def __init__(self, provisional_sink: str, settled_sink: str):
+        self.provisional_sink = Address(provisional_sink)
+        self.settled_sink = Address(settled_sink)
 
     def _judge_current_evidence(self, specification: str, evidence_url: str) -> bool:
         def leader_fn():
