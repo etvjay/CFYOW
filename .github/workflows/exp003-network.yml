@@ -48,7 +48,7 @@ jobs:
           cache: "pip"
       - run: pip install -r requirements.txt
 
-      - name: Verify Bradbury signer configuration
+      - name: Verify Bradbury signer configuration and funding
         run: |
           python - <<'PY'
           import os, sys
@@ -63,9 +63,22 @@ jobs:
               sys.exit(2)
 
           from eth_account import Account
+          from web3 import Web3
+
           account = Account.from_key(key)
+          rpc = "https://rpc-bradbury.genlayer.com"
+          web3 = Web3(Web3.HTTPProvider(rpc, request_kwargs={"timeout": 20}))
+          if not web3.is_connected():
+              print("Could not connect to Bradbury RPC.")
+              sys.exit(3)
+
+          balance_wei = web3.eth.get_balance(account.address)
           print(f"Bradbury signer address: {account.address}")
+          print(f"Bradbury signer balance: {Web3.from_wei(balance_wei, 'ether')} GEN")
           print("Private key loaded from GitHub secret: yes")
+          if balance_wei <= 0:
+              print("Bradbury signer is unfunded. Fund the public address from the Bradbury testnet faucet, then rerun.")
+              sys.exit(4)
           PY
 
       - name: Capture appeal-induced duplicate behavior
