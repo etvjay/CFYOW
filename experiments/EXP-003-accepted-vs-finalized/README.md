@@ -1,10 +1,32 @@
 # EXP-003 — Accepted World vs Final World
 
+## Benchmark family
+
+**CFYOW Shared Consequence Benchmark**
+
+EXP-003 is the finality module of the benchmark: **when is a shared adjudicated world stable enough for downstream consequences?**
+
+Dataset specification: [`DATASET.md`](./DATASET.md)  
+Visualization map: [`VISUALIZATIONS.md`](./VISUALIZATIONS.md)
+
 ## Status
-**Executable harness implemented; two Studionet evidence runs are wired. No stale-world claim is promoted until a live artifact reproduces it.**
+**Executable Bradbury testnet harness implemented. No stale-world claim is promoted until a structurally valid live artifact reproduces it and passes the strict evidence gate.**
 
 ## Research question
 What application-level failures appear when downstream coordination acts on `accepted` state instead of waiting for `finalized` state?
+
+## Why this experiment exists
+
+CFYOW studies what changes when independently governed agents coordinate through shared consequence-bearing state rather than a shared private cognition or central orchestrator. That raises a second-order problem: shared state can become recognized before it becomes settled.
+
+EXP-003 isolates that boundary. It asks whether an action can be valid relative to the best shared world at T1, yet become inconsistent with the finalized shared world at T2 without any actor privately rewriting the shared state.
+
+This is why the experiment is named **Accepted World vs Final World**:
+- **Accepted World** = recognized, shared, actionable state during the finality/appeal window;
+- **Final World** = the adjudicated state after the relevant finality process;
+- **vs** = the measured difference in downstream consequences, not a claim that one world is false and the other objectively true.
+
+The name therefore encodes the experiment's independent variable: **when downstream consequences are allowed to attach to shared state**.
 
 ## Protocol fact being tested
 GenLayer internal IC messages may be emitted on `accepted` or `finalized`. Accepted messages can execute before the appeal window closes; re-execution can emit duplicates, and a later appeal can make an already executed child message inconsistent with the final parent outcome. External IC→EVM messages are finalized-only.
@@ -66,11 +88,7 @@ Implementation:
 
 The same transaction calldata, contract code, and criterion are preserved across rounds. The experiment changes only the public external evidence before the appeal re-execution. Validator mocks are deliberately not swapped between rounds.
 
-A stale consequence is counted only when all of the following are observed:
-1. provisional sink applied the positive consequence after ACCEPTED;
-2. external evidence changed before appeal re-execution;
-3. the final re-execution does not produce the positive settled consequence;
-4. the provisional consequence remains present.
+A stale consequence is counted only when the strict evidence gate in `DATASET.md` is satisfied. A semantic transition alone is insufficient.
 
 ## Shared topology
 
@@ -122,10 +140,27 @@ Verifies idempotency and duplicate accounting. Direct mode is not evidence about
 
 Validates that a positive parent decision can eventually reach both sinks after finalization. This is wiring validation, not an appeal result.
 
-### Studionet evidence workflow
+### Bradbury testnet evidence workflow
 `.github/workflows/exp003-network.yml`
 
-Runs EXP-003A and EXP-003B, restores the mutable evidence fixture in an `always()` cleanup step, and uploads `artifacts/EXP-003/` regardless of whether the appeal phase succeeds.
+Runs EXP-003A and EXP-003B against `testnet_bradbury`, uses a dedicated testnet signer supplied only through GitHub Actions secrets, restores the mutable evidence fixture in an `always()` cleanup step, persists normalized benchmark dataset rows, and uploads evidence regardless of whether the experiment reaches a valid result.
+
+## Dataset
+
+The workflow exports one append-only case row per `(run_id, run_attempt, experiment_id)` into:
+
+```text
+results/EXP-003/dataset/run-cases.jsonl
+results/EXP-003/dataset/run-cases.csv
+results/EXP-003/dataset/overview.json
+```
+
+The dataset separates:
+1. apparatus validity;
+2. world-transition evidence;
+3. consequence-effect evidence.
+
+A failed harness is therefore not treated as a falsified protocol hypothesis.
 
 ## Metrics
 - time from parent submission to first observed `ACCEPTED`;
