@@ -4,12 +4,12 @@
     "EXP-003A",
     "EXP-003B"
   ],
-  "invalid_or_no_result": 4,
-  "latest_generated_at": "2026-08-22T09:50:26.152159+00:00",
+  "invalid_or_no_result": 6,
+  "latest_generated_at": "2026-08-22T09:53:17.083781+00:00",
   "networks": [
     "testnet_bradbury"
   ],
-  "rows": 4,
+  "rows": 6,
   "schema_version": "cfyow.exp003.dataset.overview.v1",
   "valid_runs": 0
 }
