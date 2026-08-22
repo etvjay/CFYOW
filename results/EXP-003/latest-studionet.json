@@ -15,10 +15,10 @@
     "status": "NO_RESULT",
     "step_outcome": "failure"
   },
-  "generated_at": "2026-08-22T08:11:56.726687+00:00",
+  "generated_at": "2026-08-22T08:19:54.289888+00:00",
   "github": {
     "ref": "refs/heads/research/experiment-ledger-v1",
-    "run_attempt": "1",
+    "run_attempt": "2",
     "run_id": "32561620307",
     "sha": "e85ec4198b631e9fc13e614f9bb43048d5544b11"
   },
