@@ -1,0 +1,31 @@
+{
+  "exp003a_duplicate_delivery": {
+    "artifact_files": [],
+    "failure": null,
+    "metrics": null,
+    "parent_transaction_hash": null,
+    "status": "NO_RESULT",
+    "step_outcome": "skipped"
+  },
+  "exp003b_semantic_overturn": {
+    "artifact_files": [],
+    "failure": null,
+    "metrics": null,
+    "parent_transaction_hash": null,
+    "status": "NO_RESULT",
+    "step_outcome": "skipped"
+  },
+  "generated_at": "2026-08-22T09:03:06.140022+00:00",
+  "github": {
+    "ref": "refs/heads/research/experiment-ledger-v1",
+    "run_attempt": "1",
+    "run_id": "32563875685",
+    "sha": "a720a1ebc2adb2a67dcd8c8006faff58c678fee4"
+  },
+  "interpretation": {
+    "rule": "Persistent summary records observations; it does not promote research claims.",
+    "status": "UNREVIEWED"
+  },
+  "network": "testnet_bradbury",
+  "schema_version": "cfyow.exp003.bradbury-summary.v1"
+}
