@@ -1,4 +1,4 @@
-name: EXP-003 Studionet Evidence
+name: EXP-003 Bradbury Evidence
 
 on:
   workflow_dispatch:
@@ -26,17 +26,18 @@ permissions:
   issues: write
 
 concurrency:
-  group: exp003-studionet-${{ github.ref }}
+  group: exp003-bradbury-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   appeal-reexecution:
     name: Appeal re-execution capture
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     env:
       PYTHONPATH: ${{ github.workspace }}
-      EXP003_REQUIRE_APPEAL: ${{ github.event_name == 'workflow_dispatch' && inputs.require_appeal || '0' }}
+      BRADBURY_PRIVATE_KEY: ${{ secrets.BRADBURY_PRIVATE_KEY }}
+      EXP003_REQUIRE_APPEAL: ${{ github.event_name == 'workflow_dispatch' && inputs.require_appeal || '1' }}
       EXP003_APPEAL_VALUE: ${{ github.event_name == 'workflow_dispatch' && inputs.appeal_value || '' }}
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -47,13 +48,33 @@ jobs:
           cache: "pip"
       - run: pip install -r requirements.txt
 
+      - name: Verify Bradbury signer configuration
+        run: |
+          python - <<'PY'
+          import os, sys
+          key = os.getenv("BRADBURY_PRIVATE_KEY", "").strip()
+          if not key:
+              print("BRADBURY_PRIVATE_KEY is not configured in GitHub Actions secrets.")
+              sys.exit(2)
+          if not key.startswith("0x"):
+              key = "0x" + key
+          if len(key) != 66:
+              print("BRADBURY_PRIVATE_KEY is present but is not a 32-byte hex private key.")
+              sys.exit(2)
+
+          from eth_account import Account
+          account = Account.from_key(key)
+          print(f"Bradbury signer address: {account.address}")
+          print("Private key loaded from GitHub secret: yes")
+          PY
+
       - name: Capture appeal-induced duplicate behavior
         id: exp003a
         continue-on-error: true
         run: >-
           gltest tests/integration/test_exp003_appeal_reexecution.py
-          -v -s --network studionet
-          --default-wait-retries 60
+          -v -s --network testnet_bradbury
+          --default-wait-retries 90
 
       - name: Preserve EXP-003A artifacts
         if: always()
@@ -69,8 +90,8 @@ jobs:
         continue-on-error: true
         run: >-
           gltest tests/integration/test_exp003_semantic_overturn.py
-          -v -s --network studionet
-          --default-wait-retries 60
+          -v -s --network testnet_bradbury
+          --default-wait-retries 90
 
       - name: Restore EXP-003A artifacts
         if: always()
@@ -122,7 +143,7 @@ jobs:
           from pathlib import Path
 
           artifacts = Path("artifacts/EXP-003")
-          output = Path("results/EXP-003/latest-studionet.json")
+          output = Path("results/EXP-003/latest-bradbury.json")
           output.parent.mkdir(parents=True, exist_ok=True)
 
           def load(name):
@@ -156,8 +177,9 @@ jobs:
               }
 
           payload = {
-              "schema_version": "cfyow.exp003.studionet-summary.v1",
+              "schema_version": "cfyow.exp003.bradbury-summary.v1",
               "generated_at": datetime.now(timezone.utc).isoformat(),
+              "network": "testnet_bradbury",
               "github": {
                   "run_id": os.getenv("GITHUB_RUN_ID"),
                   "run_attempt": os.getenv("GITHUB_RUN_ATTEMPT"),
@@ -182,18 +204,22 @@ jobs:
       - name: Persist latest summary to research branch
         if: always()
         run: |
-          cp results/EXP-003/latest-studionet.json /tmp/latest-studionet.json
+          if [ ! -f results/EXP-003/latest-bradbury.json ]; then
+            echo "No Bradbury summary was produced."
+            exit 0
+          fi
+          cp results/EXP-003/latest-bradbury.json /tmp/latest-bradbury.json
           git fetch origin "$GITHUB_REF_NAME"
           git reset --hard "origin/$GITHUB_REF_NAME"
           mkdir -p results/EXP-003
-          cp /tmp/latest-studionet.json results/EXP-003/latest-studionet.json
+          cp /tmp/latest-bradbury.json results/EXP-003/latest-bradbury.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add results/EXP-003/latest-studionet.json
+          git add results/EXP-003/latest-bradbury.json
           if git diff --cached --quiet; then
             echo "Persistent summary unchanged"
           else
-            git commit -m "evidence(exp003): persist Studionet run $GITHUB_RUN_ID"
+            git commit -m "evidence(exp003): persist Bradbury run $GITHUB_RUN_ID"
             git push origin "HEAD:$GITHUB_REF_NAME"
           fi
 
@@ -201,7 +227,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: exp003-studionet-evidence-${{ github.run_id }}
+          name: exp003-bradbury-evidence-${{ github.run_id }}
           path: artifacts/EXP-003/
           if-no-files-found: warn
           retention-days: 30
@@ -213,6 +239,6 @@ jobs:
           EXP003B_OUTCOME: ${{ steps.exp003b.outcome }}
         run: |
           if [ "$EXP003A_OUTCOME" != "success" ] || [ "$EXP003B_OUTCOME" != "success" ]; then
-            echo "One or more EXP-003 network steps did not succeed. Evidence summary has been persisted."
+            echo "One or more EXP-003 Bradbury steps did not succeed. Evidence summary has been persisted when available."
             exit 1
           fi
