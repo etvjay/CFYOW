@@ -1,0 +1,30 @@
+{
+  "schema_version": "experiment-ledger.manifest.v1",
+  "experiment_id": "EXP-001-baseline-calibration",
+  "hypothesis": {
+    "statement": "The deterministic and centralized baselines expose materially different judgment locations for the same milestone scenario.",
+    "falsifier": "Both baselines require the same trust boundary and expose no meaningful architectural distinction."
+  },
+  "scenario": {
+    "id": "milestone-ambiguous-001",
+    "input": {
+      "specification": "A delivery is satisfactory when all required API endpoints are implemented, documented, and the acceptance suite passes.",
+      "evidence": "The submission includes all requested endpoints and documentation. The acceptance report states that all required tests passed.",
+      "structured_attestation": {
+        "api_endpoints_implemented": true,
+        "documentation_present": true,
+        "acceptance_suite_passed": true
+      },
+      "centralized_decision": {
+        "satisfied": true,
+        "score": 92,
+        "rationale": "The supplied evidence states that all explicit acceptance conditions were met."
+      }
+    }
+  },
+  "baselines": [
+    "deterministic-attestation-v1",
+    "centralized-adjudicator-v1"
+  ],
+  "targets": []
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cfyow.dev/schemas/baseline.schema.json",
+  "title": "Experiment Ledger Baseline",
+  "type": "object",
+  "required": ["baseline_id", "type", "implementation", "entrypoint", "version", "trust_model"],
+  "properties": {
+    "baseline_id": {"type": "string", "minLength": 1},
+    "type": {"type": "string", "minLength": 1},
+    "implementation": {"type": "string", "minLength": 1},
+    "entrypoint": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_.]*:[A-Za-z_][A-Za-z0-9_]*$"},
+    "version": {"type": "string", "minLength": 1},
+    "configuration_hash": {"type": "string"},
+    "dependency_fingerprint": {"type": "string"},
+    "trust_model": {"type": "array", "items": {"type": "string"}},
+    "notes": {"type": "string"}
+  },
+  "additionalProperties": false
+}

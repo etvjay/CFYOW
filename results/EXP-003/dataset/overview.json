@@ -1,0 +1,15 @@
+{
+  "benchmark": "CFYOW Shared Consequence Benchmark",
+  "experiments": [
+    "EXP-003A",
+    "EXP-003B"
+  ],
+  "invalid_or_no_result": 12,
+  "latest_generated_at": "2026-08-22T23:00:16.439853+00:00",
+  "networks": [
+    "testnet_bradbury"
+  ],
+  "rows": 12,
+  "schema_version": "cfyow.exp003.dataset.overview.v1",
+  "valid_runs": 0
+}
