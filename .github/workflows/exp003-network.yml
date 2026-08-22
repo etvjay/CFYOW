@@ -55,6 +55,15 @@ jobs:
           -v -s --network studionet
           --default-wait-retries 60
 
+      - name: Preserve EXP-003A artifacts
+        if: always()
+        run: |
+          rm -rf /tmp/exp003a-artifacts
+          mkdir -p /tmp/exp003a-artifacts
+          if [ -d artifacts/EXP-003 ]; then
+            cp -a artifacts/EXP-003/. /tmp/exp003a-artifacts/
+          fi
+
       - name: Capture semantic-overturn behavior
         id: exp003b
         continue-on-error: true
@@ -62,6 +71,14 @@ jobs:
           gltest tests/integration/test_exp003_semantic_overturn.py
           -v -s --network studionet
           --default-wait-retries 60
+
+      - name: Restore EXP-003A artifacts
+        if: always()
+        run: |
+          mkdir -p artifacts/EXP-003
+          if [ -d /tmp/exp003a-artifacts ]; then
+            cp -a /tmp/exp003a-artifacts/. artifacts/EXP-003/
+          fi
 
       - name: Restore mutable evidence fixture
         if: always()
