@@ -48,6 +48,11 @@ jobs:
           cache: "pip"
       - run: pip install -r requirements.txt
 
+      - name: Prepare ephemeral gltest environment
+        run: |
+          umask 077
+          printf 'BRADBURY_PRIVATE_KEY=%s\n' "$BRADBURY_PRIVATE_KEY" > .env
+
       - name: Verify Bradbury signer configuration and funding
         run: |
           python - <<'PY'
@@ -66,10 +71,10 @@ jobs:
           from web3 import Web3
 
           account = Account.from_key(key)
-          rpc = "https://rpc-bradbury.genlayer.com"
-          web3 = Web3(Web3.HTTPProvider(rpc, request_kwargs={"timeout": 20}))
+          chain_rpc = "https://rpc.testnet-chain.genlayer.com"
+          web3 = Web3(Web3.HTTPProvider(chain_rpc, request_kwargs={"timeout": 20}))
           if not web3.is_connected():
-              print("Could not connect to Bradbury RPC.")
+              print("Could not connect to the Bradbury GenLayer Chain RPC used for wallet balance checks.")
               sys.exit(3)
 
           balance_wei = web3.eth.get_balance(account.address)
@@ -235,6 +240,10 @@ jobs:
             git commit -m "evidence(exp003): persist Bradbury run $GITHUB_RUN_ID"
             git push origin "HEAD:$GITHUB_REF_NAME"
           fi
+
+      - name: Remove ephemeral signer file
+        if: always()
+        run: rm -f .env
 
       - name: Upload EXP-003 evidence
         if: always()
