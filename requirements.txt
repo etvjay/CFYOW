@@ -2,3 +2,4 @@ genlayer-py @ git+https://github.com/genlayerlabs/genlayer-py@v0.18
 genlayer-test @ git+https://github.com/genlayerlabs/genlayer-testing-suite@60f850f0dabd06ae019f19bda3634864c0ab7575
 genvm-linter @ git+https://github.com/genlayerlabs/genvm-linter@main
 pytest>=8.0.0
+requests>=2.31
