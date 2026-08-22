@@ -30,6 +30,10 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
+      - env:
+          BRADBURY_PRIVATE_KEY: "0x1111111111111111111111111111111111111111111111111111111111111111"
+          # gltest plugin parses gltest.config.yaml even for offchain unit tests;
+          # dummy key satisfies interpolation, real secret only used by exp003-network.yml
       - run: pytest tests/unit -v
 
   experiment-ledger:
@@ -65,4 +69,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
+      - env:
+          BRADBURY_PRIVATE_KEY: "0x1111111111111111111111111111111111111111111111111111111111111111"
+          # gltest plugin parses gltest.config.yaml even for direct-mode tests
       - run: pytest tests/direct -v
