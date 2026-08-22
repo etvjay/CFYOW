@@ -1,0 +1,30 @@
+{
+  "exp003a_duplicate_delivery": {
+    "artifact_files": [],
+    "failure": null,
+    "metrics": null,
+    "parent_transaction_hash": null,
+    "status": "NO_RESULT",
+    "step_outcome": "failure"
+  },
+  "exp003b_semantic_overturn": {
+    "artifact_files": [],
+    "failure": null,
+    "metrics": null,
+    "parent_transaction_hash": null,
+    "status": "NO_RESULT",
+    "step_outcome": "failure"
+  },
+  "generated_at": "2026-08-22T08:11:56.726687+00:00",
+  "github": {
+    "ref": "refs/heads/research/experiment-ledger-v1",
+    "run_attempt": "1",
+    "run_id": "32561620307",
+    "sha": "e85ec4198b631e9fc13e614f9bb43048d5544b11"
+  },
+  "interpretation": {
+    "rule": "Persistent summary records observations; it does not promote research claims.",
+    "status": "UNREVIEWED"
+  },
+  "schema_version": "cfyow.exp003.studionet-summary.v1"
+}
