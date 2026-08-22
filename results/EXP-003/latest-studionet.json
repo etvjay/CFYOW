@@ -1,26 +1,44 @@
 {
   "exp003a_duplicate_delivery": {
-    "artifact_files": [],
-    "failure": null,
+    "artifact_files": [
+      "appeal-duplicate-failure.json"
+    ],
+    "failure": {
+      "appeal_override": null,
+      "error": "appeals_contract not configured for this chain",
+      "error_type": "GenLayerError",
+      "parent_transaction_hash": "0xbd82a301b5cedb19cfd79f4de66a0b4245bc25afbdc16344ffb16ceae6bebd3f",
+      "phase": "appeal_bond_resolution",
+      "status": "INVALID_RUN"
+    },
     "metrics": null,
-    "parent_transaction_hash": null,
-    "status": "NO_RESULT",
-    "step_outcome": "cancelled"
+    "parent_transaction_hash": "0xbd82a301b5cedb19cfd79f4de66a0b4245bc25afbdc16344ffb16ceae6bebd3f",
+    "status": "INVALID_RUN",
+    "step_outcome": "failure"
   },
   "exp003b_semantic_overturn": {
-    "artifact_files": [],
-    "failure": null,
+    "artifact_files": [
+      "semantic-overturn-failure.json"
+    ],
+    "failure": {
+      "appeal_override": null,
+      "error": "appeals_contract not configured for this chain",
+      "error_type": "GenLayerError",
+      "parent_transaction_hash": "0x751b59b23165b35d5d0725142d8d95c55c619b93ea5f29ea6d2514e99114a66b",
+      "phase": "appeal_bond_resolution",
+      "status": "INVALID_RUN"
+    },
     "metrics": null,
-    "parent_transaction_hash": null,
-    "status": "NO_RESULT",
-    "step_outcome": "skipped"
+    "parent_transaction_hash": "0x751b59b23165b35d5d0725142d8d95c55c619b93ea5f29ea6d2514e99114a66b",
+    "status": "INVALID_RUN",
+    "step_outcome": "failure"
   },
-  "generated_at": "2026-08-22T08:46:56.581382+00:00",
+  "generated_at": "2026-08-22T08:48:50.261721+00:00",
   "github": {
     "ref": "refs/heads/research/experiment-ledger-v1",
     "run_attempt": "1",
-    "run_id": "32563156379",
-    "sha": "d5f66181c35fd2e66c5fe724f9b11c21e606d386"
+    "run_id": "32563173845",
+    "sha": "823411a775f93e11849ae76b625c22bef0fcf1a7"
   },
   "interpretation": {
     "rule": "Persistent summary records observations; it does not promote research claims.",
