@@ -18,6 +18,8 @@ on:
       - "tests/integration/test_exp003_*.py"
       - "experiment_ledger/adapters/genlayer_*.py"
       - "experiment_ledger/adapters/exp003_*.py"
+      - "scripts/build_exp003_dataset.py"
+      - "requirements.txt"
       - "gltest.config.yaml"
       - ".github/workflows/exp003-network.yml"
 
@@ -219,23 +221,36 @@ jobs:
           print(output)
           PY
 
-      - name: Persist latest summary to research branch
+      - name: Update benchmark dataset
+        if: always()
+        run: python scripts/build_exp003_dataset.py
+
+      - name: Persist latest summary and dataset to research branch
         if: always()
         run: |
           if [ ! -f results/EXP-003/latest-bradbury.json ]; then
             echo "No Bradbury summary was produced."
             exit 0
           fi
-          cp results/EXP-003/latest-bradbury.json /tmp/latest-bradbury.json
+          rm -rf /tmp/exp003-persist
+          mkdir -p /tmp/exp003-persist
+          cp results/EXP-003/latest-bradbury.json /tmp/exp003-persist/latest-bradbury.json
+          if [ -d results/EXP-003/dataset ]; then
+            cp -a results/EXP-003/dataset /tmp/exp003-persist/dataset
+          fi
           git fetch origin "$GITHUB_REF_NAME"
           git reset --hard "origin/$GITHUB_REF_NAME"
           mkdir -p results/EXP-003
-          cp /tmp/latest-bradbury.json results/EXP-003/latest-bradbury.json
+          cp /tmp/exp003-persist/latest-bradbury.json results/EXP-003/latest-bradbury.json
+          rm -rf results/EXP-003/dataset
+          if [ -d /tmp/exp003-persist/dataset ]; then
+            cp -a /tmp/exp003-persist/dataset results/EXP-003/dataset
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add results/EXP-003/latest-bradbury.json
+          git add results/EXP-003/latest-bradbury.json results/EXP-003/dataset
           if git diff --cached --quiet; then
-            echo "Persistent summary unchanged"
+            echo "Persistent summary and dataset unchanged"
           else
             git commit -m "evidence(exp003): persist Bradbury run $GITHUB_RUN_ID"
             git push origin "HEAD:$GITHUB_REF_NAME"
@@ -250,7 +265,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: exp003-bradbury-evidence-${{ github.run_id }}
-          path: artifacts/EXP-003/
+          path: |
+            artifacts/EXP-003/
+            results/EXP-003/dataset/
           if-no-files-found: warn
           retention-days: 30
 
