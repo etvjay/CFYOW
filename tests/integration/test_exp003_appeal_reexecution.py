@@ -14,13 +14,14 @@ import os
 from pathlib import Path
 
 import pytest
-from gltest import get_contract_factory, get_validator_factory
+from gltest import get_validator_factory
 from gltest.assertions import tx_execution_succeeded
 from gltest.types import MockedLLMResponse, TransactionStatus
 
 from experiment_ledger.adapters.exp003_consequence import normalize_consequence_stability
 from experiment_ledger.adapters.genlayer_appeal import resolve_appeal_bond
 from experiment_ledger.adapters.genlayer_children import capture_child_lineage
+from tests.integration._contract_factory_compat import contract_factory_from_source
 
 pytestmark = pytest.mark.integration
 
@@ -28,7 +29,7 @@ ARTIFACT_DIR = Path("artifacts/EXP-003")
 
 
 def _tx_id(receipt: dict) -> str:
-    for key in ("id", "transaction_hash", "transactionHash", "hash"):
+    for key in ("id", "transaction_hash", "transactionHash", "hash", "tx_id"):
         value = receipt.get(key)
         if value:
             return str(value)
@@ -44,11 +45,15 @@ def _write_artifact(name: str, payload: dict) -> None:
 
 
 def test_appeal_reexecution_captures_provisional_duplicate_evidence(gl_client):
-    sink_factory = get_contract_factory("ConsequenceSink")
+    sink_factory = contract_factory_from_source(
+        "ConsequenceSink", "contracts/consequence_sink.py"
+    )
     provisional_sink = sink_factory.deploy()
     settled_sink = sink_factory.deploy()
 
-    parent_factory = get_contract_factory("ConsequenceParent")
+    parent_factory = contract_factory_from_source(
+        "ConsequenceParent", "contracts/consequence_parent.py"
+    )
     parent = parent_factory.deploy(args=[provisional_sink.address, settled_sink.address])
 
     mock_response: MockedLLMResponse = {
