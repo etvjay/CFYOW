@@ -22,8 +22,12 @@ on:
       - ".github/workflows/exp003-network.yml"
 
 permissions:
-  contents: read
+  contents: write
   issues: write
+
+concurrency:
+  group: exp003-studionet-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   appeal-reexecution:
@@ -41,16 +45,23 @@ jobs:
           python-version: "3.12"
           cache: "pip"
       - run: pip install -r requirements.txt
+
       - name: Capture appeal-induced duplicate behavior
+        id: exp003a
+        continue-on-error: true
         run: >-
           gltest tests/integration/test_exp003_appeal_reexecution.py
           -v -s --network studionet
           --default-wait-retries 60
+
       - name: Capture semantic-overturn behavior
+        id: exp003b
+        continue-on-error: true
         run: >-
           gltest tests/integration/test_exp003_semantic_overturn.py
           -v -s --network studionet
           --default-wait-retries 60
+
       - name: Restore mutable evidence fixture
         if: always()
         env:
@@ -79,6 +90,95 @@ jobs:
           )
           response.raise_for_status()
           PY
+
+      - name: Build persistent evidence summary
+        if: always()
+        env:
+          EXP003A_OUTCOME: ${{ steps.exp003a.outcome }}
+          EXP003B_OUTCOME: ${{ steps.exp003b.outcome }}
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+          import json, os
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          artifacts = Path("artifacts/EXP-003")
+          output = Path("results/EXP-003/latest-studionet.json")
+          output.parent.mkdir(parents=True, exist_ok=True)
+
+          def load(name):
+              path = artifacts / name
+              if not path.exists():
+                  return None
+              return json.loads(path.read_text(encoding="utf-8"))
+
+          def experiment(prefix, outcome):
+              metrics = load(f"{prefix}-metrics.json")
+              failure = load(f"{prefix}-failure.json")
+              before = load(f"{prefix}-before.json")
+              after = load(f"{prefix}-after.json")
+              if metrics is not None and after is not None:
+                  status = "VALID_RUN"
+              elif failure is not None:
+                  status = "INVALID_RUN"
+              else:
+                  status = "NO_RESULT"
+              return {
+                  "status": status,
+                  "step_outcome": outcome,
+                  "metrics": metrics,
+                  "failure": failure,
+                  "parent_transaction_hash": (
+                      (after or before or failure or {}).get("parent_transaction_hash")
+                  ),
+                  "artifact_files": sorted(
+                      p.name for p in artifacts.glob(f"{prefix}-*.json")
+                  ) if artifacts.exists() else [],
+              }
+
+          payload = {
+              "schema_version": "cfyow.exp003.studionet-summary.v1",
+              "generated_at": datetime.now(timezone.utc).isoformat(),
+              "github": {
+                  "run_id": os.getenv("GITHUB_RUN_ID"),
+                  "run_attempt": os.getenv("GITHUB_RUN_ATTEMPT"),
+                  "sha": os.getenv("GITHUB_SHA"),
+                  "ref": os.getenv("GITHUB_REF"),
+              },
+              "exp003a_duplicate_delivery": experiment(
+                  "appeal-duplicate", os.getenv("EXP003A_OUTCOME", "unknown")
+              ),
+              "exp003b_semantic_overturn": experiment(
+                  "semantic-overturn", os.getenv("EXP003B_OUTCOME", "unknown")
+              ),
+              "interpretation": {
+                  "status": "UNREVIEWED",
+                  "rule": "Persistent summary records observations; it does not promote research claims.",
+              },
+          }
+          output.write_text(json.dumps(payload, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
+          print(output)
+          PY
+
+      - name: Persist latest summary to research branch
+        if: always()
+        run: |
+          cp results/EXP-003/latest-studionet.json /tmp/latest-studionet.json
+          git fetch origin "$GITHUB_REF_NAME"
+          git reset --hard "origin/$GITHUB_REF_NAME"
+          mkdir -p results/EXP-003
+          cp /tmp/latest-studionet.json results/EXP-003/latest-studionet.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add results/EXP-003/latest-studionet.json
+          if git diff --cached --quiet; then
+            echo "Persistent summary unchanged"
+          else
+            git commit -m "evidence(exp003): persist Studionet run $GITHUB_RUN_ID"
+            git push origin "HEAD:$GITHUB_REF_NAME"
+          fi
+
       - name: Upload EXP-003 evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -87,3 +187,14 @@ jobs:
           path: artifacts/EXP-003/
           if-no-files-found: warn
           retention-days: 30
+
+      - name: Enforce experiment step outcomes
+        if: always()
+        env:
+          EXP003A_OUTCOME: ${{ steps.exp003a.outcome }}
+          EXP003B_OUTCOME: ${{ steps.exp003b.outcome }}
+        run: |
+          if [ "$EXP003A_OUTCOME" != "success" ] || [ "$EXP003B_OUTCOME" != "success" ]; then
+            echo "One or more EXP-003 network steps did not succeed. Evidence summary has been persisted."
+            exit 1
+          fi
