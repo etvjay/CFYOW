@@ -18,13 +18,13 @@ from pathlib import Path
 
 import pytest
 import requests
-from gltest import get_contract_factory
 from gltest.assertions import tx_execution_succeeded
 from gltest.types import TransactionStatus
 
 from experiment_ledger.adapters.exp003_consequence import normalize_consequence_stability
 from experiment_ledger.adapters.genlayer_appeal import resolve_appeal_bond
 from experiment_ledger.adapters.genlayer_children import capture_child_lineage
+from tests.integration._contract_factory_compat import contract_factory_from_source
 
 pytestmark = pytest.mark.integration
 
@@ -52,7 +52,7 @@ This issue is mutated by the EXP-003 semantic-overturn workflow between initial 
 
 
 def _tx_id(receipt: dict) -> str:
-    for key in ("id", "transaction_hash", "transactionHash", "hash"):
+    for key in ("id", "transaction_hash", "transactionHash", "hash", "tx_id"):
         value = receipt.get(key)
         if value:
             return str(value)
@@ -89,11 +89,15 @@ def _set_fixture(body: str) -> None:
 def test_semantic_overturn_can_leave_provisional_consequence(gl_client):
     _set_fixture(SATISFIED_BODY)
 
-    sink_factory = get_contract_factory("ConsequenceSink")
+    sink_factory = contract_factory_from_source(
+        "ConsequenceSink", "contracts/consequence_sink.py"
+    )
     provisional_sink = sink_factory.deploy()
     settled_sink = sink_factory.deploy()
 
-    parent_factory = get_contract_factory("ConsequenceEvidenceParent")
+    parent_factory = contract_factory_from_source(
+        "ConsequenceEvidenceParent", "contracts/consequence_evidence_parent.py"
+    )
     parent = parent_factory.deploy(args=[provisional_sink.address, settled_sink.address])
 
     receipt = parent.resolve_case(
