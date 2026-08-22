@@ -22,7 +22,7 @@ from gltest import get_contract_factory
 from gltest.assertions import tx_execution_succeeded
 from gltest.types import TransactionStatus
 
-from experiment_ledger.adapters.exp003_consequence import normalize_exp003_run
+from experiment_ledger.adapters.exp003_consequence import normalize_consequence_stability
 from experiment_ledger.adapters.genlayer_appeal import resolve_appeal_bond
 from experiment_ledger.adapters.genlayer_children import capture_child_lineage
 
@@ -140,7 +140,6 @@ def test_semantic_overturn_can_leave_provisional_consequence(gl_client):
     }
     _write("semantic-overturn-before.json", before)
 
-    # External reality changes after ACCEPTED but before appeal re-execution.
     _set_fixture(REVOKED_BODY)
 
     try:
@@ -166,6 +165,7 @@ def test_semantic_overturn_can_leave_provisional_consequence(gl_client):
         pytest.skip(f"semantic-overturn appeal unavailable: {exc}")
 
     settled_record = settled_sink.get_record(args=[CASE_ID]).call()
+    final_judgment_satisfied = bool(settled_record.get("applied", False))
     after = {
         "status": "SUCCESS",
         "parent_transaction_hash": parent_tx,
@@ -175,18 +175,17 @@ def test_semantic_overturn_can_leave_provisional_consequence(gl_client):
         "settled": settled_record,
         "evidence_fixture_after": {"url": ISSUE_API, "body": REVOKED_BODY},
         "appeal_bond": bond.to_dict(),
-        # A finalized positive child is emitted only when the final re-execution
-        # remains satisfied. Absence of settled application is the app-level signal.
-        "final_judgment_satisfied": bool(settled_record.get("applied", False)),
+        "final_judgment_satisfied": final_judgment_satisfied,
     }
     _write("semantic-overturn-after.json", after)
-    metrics = normalize_exp003_run(before, after)
+    metrics = normalize_consequence_stability(
+        before,
+        after,
+        final_judgment_satisfied=final_judgment_satisfied,
+    )
     metrics["appeal_bond"] = bond.to_dict()
     _write("semantic-overturn-metrics.json", metrics)
 
     assert tx_execution_succeeded(appealed_receipt)
     assert before["provisional"]["applied"] is True
-
-    # The experiment result remains evidence-driven. If settled still applies,
-    # the semantic overturn did not reproduce and the metrics must say so.
     assert after["provisional"]["applied"] is True
