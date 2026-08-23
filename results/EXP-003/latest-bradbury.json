@@ -5,7 +5,7 @@
     "metrics": null,
     "parent_transaction_hash": null,
     "status": "NO_RESULT",
-    "step_outcome": "failure"
+    "step_outcome": "skipped"
   },
   "exp003b_semantic_overturn": {
     "artifact_files": [],
@@ -13,14 +13,14 @@
     "metrics": null,
     "parent_transaction_hash": null,
     "status": "NO_RESULT",
-    "step_outcome": "failure"
+    "step_outcome": "skipped"
   },
-  "generated_at": "2026-08-23T00:54:06.715574+00:00",
+  "generated_at": "2026-08-23T00:59:46.305998+00:00",
   "github": {
     "ref": "refs/heads/research/experiment-ledger-v1",
     "run_attempt": "1",
-    "run_id": "32608872936",
-    "sha": "9432acc9be4133fbbd5c2c242872d5c507a6b727"
+    "run_id": "32609237149",
+    "sha": "ff18040008d13c8146322575cbefac1fa50050f5"
   },
   "interpretation": {
     "rule": "Persistent summary records observations; it does not promote research claims.",
