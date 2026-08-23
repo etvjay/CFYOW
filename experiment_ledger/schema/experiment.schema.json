@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cfyow.dev/schemas/experiment.schema.json",
+  "title": "Experiment Ledger Run",
+  "type": "object",
+  "required": ["schema_version", "experiment_id", "run_id", "hypothesis", "provenance", "scenario", "implementations", "evidence", "interpretation"],
+  "properties": {
+    "schema_version": {"const": "experiment-ledger.v1"},
+    "experiment_id": {"type": "string", "minLength": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "status": {"enum": ["SUCCESS", "FAILURE", "PARTIAL", "INCONCLUSIVE", "INVALID_RUN"]},
+    "hypothesis": {
+      "type": "object",
+      "required": ["statement", "falsifier"],
+      "properties": {
+        "statement": {"type": "string"},
+        "falsifier": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["repository", "commit_sha", "runner_version"],
+      "properties": {
+        "repository": {"type": "string"},
+        "commit_sha": {"type": "string"},
+        "branch": {"type": "string"},
+        "runner_version": {"type": "string"},
+        "environment": {"type": "object"}
+      },
+      "additionalProperties": true
+    },
+    "scenario": {
+      "type": "object",
+      "required": ["id", "input_hash", "input"],
+      "properties": {
+        "id": {"type": "string"},
+        "input_hash": {"type": "string"},
+        "input": {}
+      },
+      "additionalProperties": true
+    },
+    "implementations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "class", "status"],
+        "properties": {
+          "id": {"type": "string"},
+          "class": {"enum": ["baseline", "target"]},
+          "status": {"enum": ["SUCCESS", "FAILURE", "PARTIAL", "INVALID_RUN"]},
+          "version": {"type": "string"},
+          "result": {},
+          "metrics": {"type": "object"},
+          "errors": {"type": "array"},
+          "artifacts": {"type": "array"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "comparison": {"type": "object"},
+    "evidence": {
+      "type": "object",
+      "required": ["raw_artifacts"],
+      "properties": {
+        "raw_artifacts": {"type": "array"},
+        "logs": {"type": "array"},
+        "transaction_hashes": {"type": "array"},
+        "receipts": {"type": "array"}
+      },
+      "additionalProperties": true
+    },
+    "interpretation": {
+      "type": "object",
+      "required": ["status", "observations", "claims_supported", "claims_weakened"],
+      "properties": {
+        "status": {"enum": ["UNREVIEWED", "REVIEWED"]},
+        "observations": {"type": "array"},
+        "claims_supported": {"type": "array"},
+        "claims_weakened": {"type": "array"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,109 @@
+{
+  "generated_at": "2026-08-23T02:17:23.022598+00:00",
+  "interpretation": {
+    "status": "UNREVIEWED"
+  },
+  "note": "Static classification of the EXP-002 workflow under two contract architectures. Live measurement of child-tx counts lands with the GenLayer execution path (watchdog-gated).",
+  "schema_version": "cfyow.exp004.autonomy-budget.v1",
+  "workflows": {
+    "chained_contracts": {
+      "budget": {
+        "autonomy_ratio": 0.33,
+        "deepest_autonomous_run": 1,
+        "external_interventions": 3,
+        "internal_continuations": 3,
+        "transitions_total": 9,
+        "weighted_budget": 4.4
+      },
+      "transitions": [
+        {
+          "cls": "EXTERNAL_TRIGGER",
+          "name": "deploy_parent",
+          "note": "initial deployment needs an EOA tx"
+        },
+        {
+          "cls": "EXTERNAL_TRIGGER",
+          "name": "open_workflow",
+          "note": "requester signature defines participants"
+        },
+        {
+          "cls": "INTERNAL_CONTINUATION",
+          "name": "propose",
+          "note": "provider IC reacts to open state via child tx"
+        },
+        {
+          "cls": "NEW_AUTHORITY",
+          "name": "accept",
+          "note": "requester decision is a distinct governance act"
+        },
+        {
+          "cls": "INTERNAL_CONTINUATION",
+          "name": "commit",
+          "note": "provider IC reacts to accepted state"
+        },
+        {
+          "cls": "NEW_INFORMATION",
+          "name": "submit_evidence",
+          "note": "waits for real-world evidence to exist"
+        },
+        {
+          "cls": "FINALITY_WAIT",
+          "name": "evaluate_consensus",
+          "note": "leader/validator rounds must complete"
+        },
+        {
+          "cls": "FINALITY_WAIT",
+          "name": "appeal_window",
+          "note": "unsafe to settle until appeal window closes"
+        },
+        {
+          "cls": "INTERNAL_CONTINUATION",
+          "name": "settle",
+          "note": "emitted child from finalized evaluate"
+        }
+      ]
+    },
+    "monolithic_contract": {
+      "budget": {
+        "autonomy_ratio": 0.67,
+        "deepest_autonomous_run": 3,
+        "external_interventions": 0,
+        "internal_continuations": 4,
+        "transitions_total": 6,
+        "weighted_budget": 5.1
+      },
+      "transitions": [
+        {
+          "cls": "INTERNAL_CONTINUATION",
+          "name": "propose",
+          "note": "same contract, same tx"
+        },
+        {
+          "cls": "INTERNAL_CONTINUATION",
+          "name": "accept",
+          "note": "same contract"
+        },
+        {
+          "cls": "INTERNAL_CONTINUATION",
+          "name": "commit",
+          "note": "same contract"
+        },
+        {
+          "cls": "NEW_INFORMATION",
+          "name": "submit_evidence",
+          "note": "evidence must exist before submission is meaningful"
+        },
+        {
+          "cls": "FINALITY_WAIT",
+          "name": "evaluate_consensus",
+          "note": "judgment must finalize before settle"
+        },
+        {
+          "cls": "INTERNAL_CONTINUATION",
+          "name": "settle",
+          "note": "same contract"
+        }
+      ]
+    }
+  }
+}

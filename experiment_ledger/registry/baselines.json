@@ -1,0 +1,33 @@
+{
+  "schema_version": "experiment-ledger.baselines.v1",
+  "baselines": [
+    {
+      "baseline_id": "deterministic-attestation-v1",
+      "type": "deterministic-attestation",
+      "implementation": "baselines/deterministic.py",
+      "entrypoint": "experiment_ledger.adapters.cfyow_exp001:run_deterministic",
+      "version": "repository-source",
+      "configuration_hash": "computed-at-run",
+      "dependency_fingerprint": "computed-at-run",
+      "trust_model": [
+        "trusted structured attestation producer",
+        "deterministic application logic"
+      ],
+      "notes": "Controls for cases where ambiguous evidence has already been reduced to trusted structured facts."
+    },
+    {
+      "baseline_id": "centralized-adjudicator-v1",
+      "type": "centralized-semantic-adjudicator",
+      "implementation": "baselines/centralized.py",
+      "entrypoint": "experiment_ledger.adapters.cfyow_exp001:run_centralized",
+      "version": "repository-source",
+      "configuration_hash": "computed-at-run",
+      "dependency_fingerprint": "computed-at-run",
+      "trust_model": [
+        "single application operator",
+        "single adjudication execution path"
+      ],
+      "notes": "Controls for semantic programmability without distributed adjudication."
+    }
+  ]
+}

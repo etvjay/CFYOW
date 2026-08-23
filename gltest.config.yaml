@@ -1,0 +1,15 @@
+networks:
+  default: studionet
+  studionet:
+    leader_only: false
+
+  testnet_bradbury:
+    accounts:
+      - "${BRADBURY_PRIVATE_KEY}"
+    from: "${BRADBURY_PRIVATE_KEY}"
+
+paths:
+  contracts: "contracts"
+  artifacts: "artifacts"
+
+environment: .env

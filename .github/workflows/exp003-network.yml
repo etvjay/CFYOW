@@ -1,0 +1,290 @@
+name: EXP-003 Bradbury Evidence
+
+on:
+  workflow_dispatch:
+    inputs:
+      require_appeal:
+        description: "Fail rather than skip if appeal cannot execute"
+        required: false
+        default: "1"
+      appeal_value:
+        description: "Optional positive appeal bond override; blank uses network minimum"
+        required: false
+        default: ""
+  push:
+    branches: ["research/experiment-ledger-v1"]
+    paths:
+      - "contracts/consequence_*.py"
+      - "tests/integration/test_exp003_*.py"
+      - "experiment_ledger/adapters/genlayer_*.py"
+      - "experiment_ledger/adapters/exp003_*.py"
+      - "scripts/build_exp003_dataset.py"
+      - "requirements.txt"
+      - "gltest.config.yaml"
+      - ".github/workflows/exp003-network.yml"
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: exp003-bradbury-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  appeal-reexecution:
+    name: Appeal re-execution capture
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      BRADBURY_PRIVATE_KEY: ${{ secrets.BRADBURY_PRIVATE_KEY }}
+      EXP003_REQUIRE_APPEAL: ${{ github.event_name == 'workflow_dispatch' && inputs.require_appeal || '1' }}
+      EXP003_APPEAL_VALUE: ${{ github.event_name == 'workflow_dispatch' && inputs.appeal_value || '' }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+      - run: pip install -r requirements.txt
+      # Bradbury needs receipt handling (status 14 LEADER_REVEALING, testnet receipt
+      # shapes) from unreleased genlayer-py/gltest revisions. CI unit/direct jobs keep
+      # the v0.29 pin because newer direct-mode has a calldata regression.
+      - run: >-
+          pip install --force-reinstall
+          "genlayer-py @ git+https://github.com/genlayerlabs/genlayer-py@ec7cab9"
+          "genlayer-test @ git+https://github.com/genlayerlabs/genlayer-testing-suite@60f850f0dabd06ae019f19bda3634864c0ab7575"
+
+      - name: Prepare ephemeral gltest environment
+        run: |
+          umask 077
+          printf 'BRADBURY_PRIVATE_KEY=%s\n' "$BRADBURY_PRIVATE_KEY" > .env
+
+      - name: Verify Bradbury signer configuration and funding
+        run: |
+          python - <<'PY'
+          import os, sys
+          key = os.getenv("BRADBURY_PRIVATE_KEY", "").strip()
+          if not key:
+              print("BRADBURY_PRIVATE_KEY is not configured in GitHub Actions secrets.")
+              sys.exit(2)
+          if not key.startswith("0x"):
+              key = "0x" + key
+          if len(key) != 66:
+              print("BRADBURY_PRIVATE_KEY is present but is not a 32-byte hex private key.")
+              sys.exit(2)
+
+          from eth_account import Account
+          from web3 import Web3
+
+          account = Account.from_key(key)
+          chain_rpc = "https://rpc.testnet-chain.genlayer.com"
+          web3 = Web3(Web3.HTTPProvider(chain_rpc, request_kwargs={"timeout": 20}))
+          if not web3.is_connected():
+              print("Could not connect to the Bradbury GenLayer Chain RPC used for wallet balance checks.")
+              sys.exit(3)
+
+          balance_wei = web3.eth.get_balance(account.address)
+          print(f"Bradbury signer address: {account.address}")
+          print(f"Bradbury signer balance: {Web3.from_wei(balance_wei, 'ether')} GEN")
+          print("Private key loaded from GitHub secret: yes")
+          if balance_wei <= 0:
+              print("Bradbury signer is unfunded. Fund the public address from the Bradbury testnet faucet, then rerun.")
+              sys.exit(4)
+          PY
+
+      - name: Capture appeal-induced duplicate behavior
+        id: exp003a
+        continue-on-error: true
+        run: >-
+          gltest tests/integration/test_exp003_appeal_reexecution.py
+          -v -s --network testnet_bradbury
+          --default-wait-retries 90
+
+      - name: Preserve EXP-003A artifacts
+        if: always()
+        run: |
+          rm -rf /tmp/exp003a-artifacts
+          mkdir -p /tmp/exp003a-artifacts
+          if [ -d artifacts/EXP-003 ]; then
+            cp -a artifacts/EXP-003/. /tmp/exp003a-artifacts/
+          fi
+
+      - name: Capture semantic-overturn behavior
+        id: exp003b
+        continue-on-error: true
+        run: >-
+          gltest tests/integration/test_exp003_semantic_overturn.py
+          -v -s --network testnet_bradbury
+          --default-wait-retries 90
+
+      - name: Restore EXP-003A artifacts
+        if: always()
+        run: |
+          mkdir -p artifacts/EXP-003
+          if [ -d /tmp/exp003a-artifacts ]; then
+            cp -a /tmp/exp003a-artifacts/. artifacts/EXP-003/
+          fi
+
+      - name: Restore mutable evidence fixture
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import os, requests
+          body = '''CFYOW controlled external-evidence fixture.
+
+          EVIDENCE_STATUS: SATISFIED
+
+          The deployed service returns HTTP 200 and JSON `{ "status": "ok" }` at `/health`.
+
+          This issue is mutated by the EXP-003 semantic-overturn workflow between initial ACCEPTED state and appeal re-execution. It is an experimental fixture, not a product issue.
+          '''
+          response = requests.patch(
+              "https://api.github.com/repos/etvjay/CFYOW/issues/3",
+              headers={
+                  "Authorization": f"Bearer {os.environ['GH_TOKEN']}",
+                  "Accept": "application/vnd.github+json",
+                  "X-GitHub-Api-Version": "2022-11-28",
+                  "User-Agent": "CFYOW-EXP003-cleanup",
+              },
+              json={"body": body},
+              timeout=20,
+          )
+          response.raise_for_status()
+          PY
+
+      - name: Build persistent evidence summary
+        if: always()
+        env:
+          EXP003A_OUTCOME: ${{ steps.exp003a.outcome }}
+          EXP003B_OUTCOME: ${{ steps.exp003b.outcome }}
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+          import json, os
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          artifacts = Path("artifacts/EXP-003")
+          output = Path("results/EXP-003/latest-bradbury.json")
+          output.parent.mkdir(parents=True, exist_ok=True)
+
+          def load(name):
+              path = artifacts / name
+              if not path.exists():
+                  return None
+              return json.loads(path.read_text(encoding="utf-8"))
+
+          def experiment(prefix, outcome):
+              metrics = load(f"{prefix}-metrics.json")
+              failure = load(f"{prefix}-failure.json")
+              before = load(f"{prefix}-before.json")
+              after = load(f"{prefix}-after.json")
+              if metrics is not None and after is not None:
+                  status = "VALID_RUN"
+              elif failure is not None:
+                  status = "INVALID_RUN"
+              else:
+                  status = "NO_RESULT"
+              return {
+                  "status": status,
+                  "step_outcome": outcome,
+                  "metrics": metrics,
+                  "failure": failure,
+                  "parent_transaction_hash": (
+                      (after or before or failure or {}).get("parent_transaction_hash")
+                  ),
+                  "artifact_files": sorted(
+                      p.name for p in artifacts.glob(f"{prefix}-*.json")
+                  ) if artifacts.exists() else [],
+              }
+
+          payload = {
+              "schema_version": "cfyow.exp003.bradbury-summary.v1",
+              "generated_at": datetime.now(timezone.utc).isoformat(),
+              "network": "testnet_bradbury",
+              "github": {
+                  "run_id": os.getenv("GITHUB_RUN_ID"),
+                  "run_attempt": os.getenv("GITHUB_RUN_ATTEMPT"),
+                  "sha": os.getenv("GITHUB_SHA"),
+                  "ref": os.getenv("GITHUB_REF"),
+              },
+              "exp003a_duplicate_delivery": experiment(
+                  "appeal-duplicate", os.getenv("EXP003A_OUTCOME", "unknown")
+              ),
+              "exp003b_semantic_overturn": experiment(
+                  "semantic-overturn", os.getenv("EXP003B_OUTCOME", "unknown")
+              ),
+              "interpretation": {
+                  "status": "UNREVIEWED",
+                  "rule": "Persistent summary records observations; it does not promote research claims.",
+              },
+          }
+          output.write_text(json.dumps(payload, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
+          print(output)
+          PY
+
+      - name: Update benchmark dataset
+        if: always()
+        run: python scripts/build_exp003_dataset.py
+
+      - name: Persist latest summary and dataset to research branch
+        if: always()
+        run: |
+          if [ ! -f results/EXP-003/latest-bradbury.json ]; then
+            echo "No Bradbury summary was produced."
+            exit 0
+          fi
+          rm -rf /tmp/exp003-persist
+          mkdir -p /tmp/exp003-persist
+          cp results/EXP-003/latest-bradbury.json /tmp/exp003-persist/latest-bradbury.json
+          if [ -d results/EXP-003/dataset ]; then
+            cp -a results/EXP-003/dataset /tmp/exp003-persist/dataset
+          fi
+          git fetch origin "$GITHUB_REF_NAME"
+          git reset --hard "origin/$GITHUB_REF_NAME"
+          mkdir -p results/EXP-003
+          cp /tmp/exp003-persist/latest-bradbury.json results/EXP-003/latest-bradbury.json
+          rm -rf results/EXP-003/dataset
+          if [ -d /tmp/exp003-persist/dataset ]; then
+            cp -a /tmp/exp003-persist/dataset results/EXP-003/dataset
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add results/EXP-003/latest-bradbury.json results/EXP-003/dataset
+          if git diff --cached --quiet; then
+            echo "Persistent summary and dataset unchanged"
+          else
+            git commit -m "evidence(exp003): persist Bradbury run $GITHUB_RUN_ID"
+            git push origin "HEAD:$GITHUB_REF_NAME"
+          fi
+
+      - name: Remove ephemeral signer file
+        if: always()
+        run: rm -f .env
+
+      - name: Upload EXP-003 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: exp003-bradbury-evidence-${{ github.run_id }}
+          path: |
+            artifacts/EXP-003/
+            results/EXP-003/dataset/
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Enforce experiment step outcomes
+        if: always()
+        env:
+          EXP003A_OUTCOME: ${{ steps.exp003a.outcome }}
+          EXP003B_OUTCOME: ${{ steps.exp003b.outcome }}
+        run: |
+          if [ "$EXP003A_OUTCOME" != "success" ] || [ "$EXP003B_OUTCOME" != "success" ]; then
+            echo "One or more EXP-003 Bradbury steps did not succeed. Evidence summary has been persisted when available."
+            exit 1
+          fi

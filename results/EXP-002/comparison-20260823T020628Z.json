@@ -1,0 +1,206 @@
+{
+  "generated_at": "2026-08-23T02:06:28.500375+00:00",
+  "runs": [
+    {
+      "A": {
+        "appeal_capable": false,
+        "arm": "A_deterministic",
+        "llm_calls": 0,
+        "outcome": "completed",
+        "verdict": "satisfied",
+        "wall_ms": 0
+      },
+      "B": {
+        "appeal_capable": false,
+        "arm": "B_centralized_judge",
+        "llm_calls": 3,
+        "outcome": "rejected",
+        "schema_violations": 0,
+        "verdict": "unsatisfied",
+        "wall_ms": 7296
+      },
+      "C": {
+        "appeal_capable": true,
+        "arm": "C_genlayer_optimistic_democracy",
+        "note": "contract ready (different_minds_judged.py); awaits GenLayer execution path",
+        "outcome": "PENDING_NETWORK",
+        "verdict": null
+      },
+      "objective": "Deliver a working JSON health endpoint that returns HTTP 200 and {\\\"status\\\": \\\"ok\\\"} at /health.",
+      "workflow": 1
+    },
+    {
+      "A": {
+        "appeal_capable": false,
+        "arm": "A_deterministic",
+        "llm_calls": 0,
+        "outcome": "completed",
+        "verdict": "satisfied",
+        "wall_ms": 0
+      },
+      "B": {
+        "appeal_capable": false,
+        "arm": "B_centralized_judge",
+        "llm_calls": 3,
+        "outcome": "rejected",
+        "schema_violations": 0,
+        "verdict": "unsatisfied",
+        "wall_ms": 12889
+      },
+      "C": {
+        "appeal_capable": true,
+        "arm": "C_genlayer_optimistic_democracy",
+        "note": "contract ready (different_minds_judged.py); awaits GenLayer execution path",
+        "outcome": "PENDING_NETWORK",
+        "verdict": null
+      },
+      "objective": "Deliver an uptime status page showing the service as operational.",
+      "workflow": 2
+    },
+    {
+      "A": {
+        "appeal_capable": false,
+        "arm": "A_deterministic",
+        "llm_calls": 0,
+        "outcome": "completed",
+        "verdict": "satisfied",
+        "wall_ms": 0
+      },
+      "B": {
+        "appeal_capable": false,
+        "arm": "B_centralized_judge",
+        "llm_calls": 3,
+        "outcome": "rejected",
+        "schema_violations": 0,
+        "verdict": "unsatisfied",
+        "wall_ms": 11763
+      },
+      "C": {
+        "appeal_capable": true,
+        "arm": "C_genlayer_optimistic_democracy",
+        "note": "contract ready (different_minds_judged.py); awaits GenLayer execution path",
+        "outcome": "PENDING_NETWORK",
+        "verdict": null
+      },
+      "objective": "Deliver a JSON status endpoint including a timestamp field.",
+      "workflow": 3
+    },
+    {
+      "A": {
+        "appeal_capable": false,
+        "arm": "A_deterministic",
+        "llm_calls": 0,
+        "outcome": "completed",
+        "verdict": "satisfied",
+        "wall_ms": 0
+      },
+      "B": {
+        "appeal_capable": false,
+        "arm": "B_centralized_judge",
+        "llm_calls": 3,
+        "outcome": "rejected",
+        "schema_violations": 0,
+        "verdict": "unsatisfied",
+        "wall_ms": 20690
+      },
+      "C": {
+        "appeal_capable": true,
+        "arm": "C_genlayer_optimistic_democracy",
+        "note": "contract ready (different_minds_judged.py); awaits GenLayer execution path",
+        "outcome": "PENDING_NETWORK",
+        "verdict": null
+      },
+      "objective": "Deliver a working JSON health endpoint that returns HTTP 200 and {\\\"status\\\": \\\"ok\\\"} at /health.",
+      "workflow": 4
+    },
+    {
+      "A": {
+        "appeal_capable": false,
+        "arm": "A_deterministic",
+        "llm_calls": 0,
+        "outcome": "completed",
+        "verdict": "satisfied",
+        "wall_ms": 0
+      },
+      "B": {
+        "appeal_capable": false,
+        "arm": "B_centralized_judge",
+        "llm_calls": 3,
+        "outcome": "rejected",
+        "schema_violations": 0,
+        "verdict": "unsatisfied",
+        "wall_ms": 8125
+      },
+      "C": {
+        "appeal_capable": true,
+        "arm": "C_genlayer_optimistic_democracy",
+        "note": "contract ready (different_minds_judged.py); awaits GenLayer execution path",
+        "outcome": "PENDING_NETWORK",
+        "verdict": null
+      },
+      "objective": "Deliver an uptime status page showing the service as operational.",
+      "workflow": 5
+    },
+    {
+      "A": {
+        "appeal_capable": false,
+        "arm": "A_deterministic",
+        "llm_calls": 0,
+        "outcome": "completed",
+        "verdict": "satisfied",
+        "wall_ms": 0
+      },
+      "B": {
+        "appeal_capable": false,
+        "arm": "B_centralized_judge",
+        "llm_calls": 3,
+        "outcome": "rejected",
+        "schema_violations": 0,
+        "verdict": "unsatisfied",
+        "wall_ms": 13842
+      },
+      "C": {
+        "appeal_capable": true,
+        "arm": "C_genlayer_optimistic_democracy",
+        "note": "contract ready (different_minds_judged.py); awaits GenLayer execution path",
+        "outcome": "PENDING_NETWORK",
+        "verdict": null
+      },
+      "objective": "Deliver a JSON status endpoint including a timestamp field.",
+      "workflow": 6
+    }
+  ],
+  "schema_version": "cfyow.exp002.comparison.v1",
+  "summary": {
+    "A_deterministic": {
+      "avg_wall_ms": 0,
+      "outcomes": {
+        "completed": 6
+      },
+      "total_llm_calls": 0,
+      "verdicts": {
+        "satisfied": 6
+      }
+    },
+    "B_centralized_judge": {
+      "avg_wall_ms": 12434,
+      "outcomes": {
+        "rejected": 6
+      },
+      "total_llm_calls": 18,
+      "verdicts": {
+        "unsatisfied": 6
+      }
+    },
+    "C_genlayer": {
+      "avg_wall_ms": null,
+      "outcomes": {
+        "PENDING_NETWORK": 6
+      },
+      "total_llm_calls": 0,
+      "verdicts": {
+        "none": 6
+      }
+    }
+  }
+}

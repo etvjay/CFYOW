@@ -1,0 +1,274 @@
+{
+  "generated_at": "2026-08-23T02:12:45.986121+00:00",
+  "n_runs": 7,
+  "runs": [
+    {
+      "A": {
+        "appeal_capable": false,
+        "arm": "A_deterministic",
+        "correct": null,
+        "llm_calls": 0,
+        "outcome": "completed",
+        "verdict": "satisfied",
+        "wall_ms": 0
+      },
+      "B": {
+        "appeal_capable": false,
+        "arm": "B_centralized_judge",
+        "correct": true,
+        "ground_truth": "satisfied",
+        "llm_calls": 1,
+        "outcome": "completed",
+        "reason": "The fetched evidence confirms that the /health endpoint returned HTTP 200 with a JSON body containing \"status\":\"ok\", exactly as required.",
+        "verdict": "satisfied",
+        "wall_ms": 1238
+      },
+      "C": {
+        "appeal_capable": true,
+        "arm": "C_genlayer_optimistic_democracy",
+        "correct": null,
+        "outcome": "PENDING_NETWORK",
+        "verdict": null
+      },
+      "ground_truth": "satisfied",
+      "objective": "Deliver a JSON health endpoint returning HTTP 200 and {\"status\": \"ok\"} at /health.",
+      "run_id": "0-1",
+      "scenario_class": "verifiable"
+    },
+    {
+      "A": {
+        "appeal_capable": false,
+        "arm": "A_deterministic",
+        "correct": null,
+        "llm_calls": 0,
+        "outcome": "completed",
+        "verdict": "satisfied",
+        "wall_ms": 0
+      },
+      "B": {
+        "appeal_capable": false,
+        "arm": "B_centralized_judge",
+        "correct": true,
+        "ground_truth": "unsatisfied",
+        "llm_calls": 1,
+        "outcome": "rejected",
+        "reason": "The evidence only provides a hash of a commitment without exposing any live endpoint; it does not show that a /health endpoint actually exists, returns HTTP 200, or returns {\"status\":\"ok\"}. Therefore the objective is not demonstrably satisfied.",
+        "verdict": "unsatisfied",
+        "wall_ms": 3744
+      },
+      "C": {
+        "appeal_capable": true,
+        "arm": "C_genlayer_optimistic_democracy",
+        "correct": null,
+        "outcome": "PENDING_NETWORK",
+        "verdict": null
+      },
+      "ground_truth": "unsatisfied",
+      "objective": "Deliver a JSON health endpoint returning HTTP 200 and {\"status\": \"ok\"} at /health.",
+      "run_id": "0-2",
+      "scenario_class": "unproven"
+    },
+    {
+      "A": {
+        "appeal_capable": false,
+        "arm": "A_deterministic",
+        "correct": null,
+        "llm_calls": 0,
+        "outcome": "completed",
+        "verdict": "satisfied",
+        "wall_ms": 0
+      },
+      "B": {
+        "appeal_capable": false,
+        "arm": "B_centralized_judge",
+        "correct": true,
+        "ground_truth": "unsatisfied",
+        "llm_calls": 1,
+        "outcome": "rejected",
+        "reason": "The response body returned by /health is {\"state\":\"fine\"}, which does not contain the required word \"healthy\". Therefore the objective of delivering a health endpoint whose response body contains \"healthy\" was not met.",
+        "verdict": "unsatisfied",
+        "wall_ms": 1542
+      },
+      "C": {
+        "appeal_capable": true,
+        "arm": "C_genlayer_optimistic_democracy",
+        "correct": null,
+        "outcome": "PENDING_NETWORK",
+        "verdict": null
+      },
+      "ground_truth": "unsatisfied",
+      "objective": "Deliver a health endpoint whose response body contains the word \"healthy\".",
+      "run_id": "0-3",
+      "scenario_class": "false_claim"
+    },
+    {
+      "A": {
+        "appeal_capable": false,
+        "arm": "A_deterministic",
+        "correct": null,
+        "llm_calls": 0,
+        "outcome": "completed",
+        "verdict": "satisfied",
+        "wall_ms": 0
+      },
+      "B": {
+        "appeal_capable": false,
+        "arm": "B_centralized_judge",
+        "correct": true,
+        "ground_truth": "satisfied",
+        "llm_calls": 1,
+        "outcome": "completed",
+        "reason": "The evidence at /evidence/uptime-ok explicitly states that the service \"exp002\" has an uptime percentage of 99.98% and that the \"status_page\" shows the service as \"operational\". This directly confirms that the required uptime status page displaying the service as operational has been delivered.",
+        "verdict": "satisfied",
+        "wall_ms": 1440
+      },
+      "C": {
+        "appeal_capable": true,
+        "arm": "C_genlayer_optimistic_democracy",
+        "correct": null,
+        "outcome": "PENDING_NETWORK",
+        "verdict": null
+      },
+      "ground_truth": "satisfied",
+      "objective": "Deliver an uptime status page showing the service as operational.",
+      "run_id": "0-4",
+      "scenario_class": "verifiable"
+    },
+    {
+      "A": {
+        "appeal_capable": false,
+        "arm": "A_deterministic",
+        "correct": null,
+        "llm_calls": 0,
+        "outcome": "completed",
+        "verdict": "satisfied",
+        "wall_ms": 0
+      },
+      "B": {
+        "appeal_capable": false,
+        "arm": "B_centralized_judge",
+        "correct": true,
+        "ground_truth": "unsatisfied",
+        "llm_calls": 1,
+        "outcome": "rejected",
+        "reason": "The provided evidence is merely a SHA\u2011256 digest (commit hash) and does not contain any actual uptime status page content or proof that such a page displaying the service as operational has been delivered.",
+        "verdict": "unsatisfied",
+        "wall_ms": 2015
+      },
+      "C": {
+        "appeal_capable": true,
+        "arm": "C_genlayer_optimistic_democracy",
+        "correct": null,
+        "outcome": "PENDING_NETWORK",
+        "verdict": null
+      },
+      "ground_truth": "unsatisfied",
+      "objective": "Deliver an uptime status page showing the service as operational.",
+      "run_id": "0-5",
+      "scenario_class": "unproven"
+    },
+    {
+      "A": {
+        "appeal_capable": false,
+        "arm": "A_deterministic",
+        "correct": null,
+        "llm_calls": 0,
+        "outcome": "completed",
+        "verdict": "satisfied",
+        "wall_ms": 0
+      },
+      "B": {
+        "appeal_capable": false,
+        "arm": "B_centralized_judge",
+        "correct": true,
+        "ground_truth": "unsatisfied",
+        "llm_calls": 1,
+        "outcome": "rejected",
+        "reason": "The response explicitly states that the /metrics endpoint does not exist, providing only a /health endpoint with an 'ok' status. No endpoint delivering numeric latency data at /metrics was found in the evidence.",
+        "verdict": "unsatisfied",
+        "wall_ms": 2100
+      },
+      "C": {
+        "appeal_capable": true,
+        "arm": "C_genlayer_optimistic_democracy",
+        "correct": null,
+        "outcome": "PENDING_NETWORK",
+        "verdict": null
+      },
+      "ground_truth": "unsatisfied",
+      "objective": "Deliver an endpoint at /metrics returning numeric latency data.",
+      "run_id": "0-6",
+      "scenario_class": "false_claim"
+    },
+    {
+      "A": {
+        "appeal_capable": false,
+        "arm": "A_deterministic",
+        "correct": null,
+        "llm_calls": 0,
+        "outcome": "completed",
+        "verdict": "satisfied",
+        "wall_ms": 0
+      },
+      "B": {
+        "appeal_capable": false,
+        "arm": "B_centralized_judge",
+        "correct": true,
+        "ground_truth": "satisfied",
+        "llm_calls": 1,
+        "outcome": "completed",
+        "reason": "The returned response is a JSON object that includes a \"timestamp\" field with a valid ISO8601 date-time value, confirming that the status endpoint delivers JSON with the required timestamp field.",
+        "verdict": "satisfied",
+        "wall_ms": 1884
+      },
+      "C": {
+        "appeal_capable": true,
+        "arm": "C_genlayer_optimistic_democracy",
+        "correct": null,
+        "outcome": "PENDING_NETWORK",
+        "verdict": null
+      },
+      "ground_truth": "satisfied",
+      "objective": "Deliver a JSON status endpoint including a timestamp field.",
+      "run_id": "0-7",
+      "scenario_class": "verifiable"
+    }
+  ],
+  "schema_version": "cfyow.exp002.scaled.v1",
+  "summary": {
+    "B_accuracy_overall": "7/7",
+    "by_scenario_class": {
+      "false_claim": {
+        "a_verdicts": {
+          "satisfied": 2
+        },
+        "b_correct": 2,
+        "b_verdicts": {
+          "unsatisfied": 2
+        },
+        "n": 2
+      },
+      "unproven": {
+        "a_verdicts": {
+          "satisfied": 2
+        },
+        "b_correct": 2,
+        "b_verdicts": {
+          "unsatisfied": 2
+        },
+        "n": 2
+      },
+      "verifiable": {
+        "a_verdicts": {
+          "satisfied": 3
+        },
+        "b_correct": 3,
+        "b_verdicts": {
+          "satisfied": 3
+        },
+        "n": 3
+      }
+    },
+    "headline": "Deterministic arm A settles every scenario identically regardless of ground truth; centralized LLM judge discriminates scenario classes."
+  }
+}

@@ -17,6 +17,9 @@ jobs:
           python-version: "3.12"
       - run: pip install -r requirements.txt
       - run: genvm-lint check contracts/judgment_boundary.py
+      - run: genvm-lint check contracts/consequence_parent.py
+      - run: genvm-lint check contracts/consequence_evidence_parent.py
+      - run: genvm-lint check contracts/consequence_sink.py
 
   test-baselines:
     name: Baseline unit tests
@@ -27,7 +30,35 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
+        # gltest plugin parses gltest.config.yaml even for offchain unit tests;
+        # gltest reads BRADBURY_PRIVATE_KEY from the .env file (environment: .env),
+        # so seed a dummy one. Real secret only used by exp003-network.yml.
+      - run: printf 'BRADBURY_PRIVATE_KEY=%s\n' "0x1111111111111111111111111111111111111111111111111111111111111111" > .env
       - run: pytest tests/unit -v
+
+  experiment-ledger:
+    name: Experiment Ledger capture
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Capture every EXP-001 baseline
+        run: >-
+          python -m experiment_ledger run
+          experiments/EXP-001-judgment-boundary/baseline-manifest.json
+          --run-id ci-baseline-calibration
+          --output results/EXP-001-baseline-calibration/runs/ci-baseline-calibration.json
+      - name: Validate capture
+        run: >-
+          python -m experiment_ledger validate
+          results/EXP-001-baseline-calibration/runs/ci-baseline-calibration.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: experiment-ledger-exp001-baselines
+          path: results/EXP-001-baseline-calibration/runs/ci-baseline-calibration.json
 
   test-direct:
     name: GenLayer direct-mode tests
@@ -38,4 +69,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
+        # gltest plugin parses gltest.config.yaml even for direct-mode tests and
+        # reads BRADBURY_PRIVATE_KEY from the .env file; seed a dummy one here.
+      - run: printf 'BRADBURY_PRIVATE_KEY=%s\n' "0x1111111111111111111111111111111111111111111111111111111111111111" > .env
       - run: pytest tests/direct -v

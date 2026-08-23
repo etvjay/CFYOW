@@ -1,0 +1,181 @@
+{
+  "failure_taxonomy": {
+    "incidents_total": 8,
+    "incidents_upstream_bugs": 7,
+    "real_incidents_caught_per_surface": {
+      "direct_mode_tests": 3,
+      "genvm_lint": 0,
+      "live_testnet_only": 5,
+      "multi_validator_sim": 0,
+      "static_reasoning": 0
+    },
+    "surfaces_cheap_to_expensive": [
+      "static_reasoning",
+      "genvm_lint",
+      "direct_mode_tests",
+      "multi_validator_sim",
+      "live_testnet_only"
+    ],
+    "tasks_detectable_per_surface": {
+      "direct_mode_tests": 4,
+      "genvm_lint": 1,
+      "live_testnet_only": 5,
+      "multi_validator_sim": 3,
+      "static_reasoning": 2
+    }
+  },
+  "generated_at": "2026-08-23T08:23:40.378760+00:00",
+  "headline": "7/8 real build incidents were upstream tooling bugs; 5/8 were only catchable on the live network. Judgment-bearing tasks (equivalence, consensus evaluation) concentrate consensus-sensitive code and are invisible to cheap surfaces.",
+  "interpretation": {
+    "status": "UNREVIEWED"
+  },
+  "real_incidents": [
+    {
+      "fix_cost": "one-line pyproject pythonpath",
+      "incident": "pytest ModuleNotFoundError: baselines package not on path",
+      "surface_caught": "direct_mode_tests",
+      "task": "deterministic_transition",
+      "upstream_bug": false
+    },
+    {
+      "fix_cost": "dummy .env seeding in CI",
+      "incident": "gltest requires BRADBURY_PRIVATE_KEY .env even for offchain unit tests (gltest plugin parses config for every pytest run)",
+      "surface_caught": "direct_mode_tests",
+      "task": "llm_evaluation",
+      "upstream_bug": true
+    },
+    {
+      "fix_cost": "dual pins: v0.29 for direct CI, 60f850f only for network jobs",
+      "incident": "genlayer-testing-suite 60f850f + main head: direct-mode calldata roundtrip regression (DecodingError: unexpected end of memory) on TreeMap/Address contracts",
+      "surface_caught": "direct_mode_tests",
+      "task": "leader_validator_equivalence",
+      "upstream_bug": true
+    },
+    {
+      "fix_cost": "None-safe shim + recipient fallback",
+      "incident": "Bradbury deploy receipts return tx_data_decoded: null \u2014 gltest extract_contract_address raises TypeError (None membership test)",
+      "surface_caught": "live_testnet_only",
+      "task": "post_consensus_side_effects",
+      "upstream_bug": true
+    },
+    {
+      "fix_cost": "receipt-shape-aware success assertion (60f850f fixes this, unreleased)",
+      "incident": "deploy receipts arrive status=5 ACCEPTED with consensus_data={} \u2014 v0.29 tx_execution_succeeded requires leader_receipt, fails on valid txs",
+      "surface_caught": "live_testnet_only",
+      "task": "accepted_vs_finalized_child",
+      "upstream_bug": true
+    },
+    {
+      "fix_cost": "pin genlayer-py v0.19 line (ec7cab9)",
+      "incident": "transaction status 14 (LEADER_REVEALING) unknown to genlayer-py v0.18 \u2014 KeyError during receipt parse",
+      "surface_caught": "live_testnet_only",
+      "task": "appeal_safe_receiving",
+      "upstream_bug": true
+    },
+    {
+      "fix_cost": "capacity-retry wrapper with backoff",
+      "incident": "Bradbury gas rate limit (-32005) fails deploys hard, no built-in retry",
+      "surface_caught": "live_testnet_only",
+      "task": "multi_validator_network",
+      "upstream_bug": true
+    },
+    {
+      "fix_cost": "shape-tolerant message normalization",
+      "incident": "newer genlayer-py returns tuple-shaped messages; child-lineage adapter assumed dicts \u2014 AttributeError mid-evidence-capture",
+      "surface_caught": "live_testnet_only",
+      "task": "leader_validator_equivalence",
+      "upstream_bug": true
+    }
+  ],
+  "schema_version": "cfyow.exp005.devx.v1",
+  "tasks": [
+    {
+      "artifact": "contracts/different_minds.py (propose/accept state machine)",
+      "consensus_sensitive_lines": 0,
+      "detectable_by": [
+        "static_reasoning",
+        "genvm_lint",
+        "direct_mode_tests"
+      ],
+      "id": 1,
+      "judgment_added": false,
+      "name": "deterministic state transition"
+    },
+    {
+      "artifact": "contracts/different_minds_judged.py (_judge leader_fn)",
+      "consensus_sensitive_lines": 14,
+      "detectable_by": [
+        "direct_mode_tests",
+        "multi_validator_sim"
+      ],
+      "id": 2,
+      "judgment_added": true,
+      "name": "free-form LLM/evidence evaluation"
+    },
+    {
+      "artifact": "contracts/different_minds_judged.py (validator_fn)",
+      "consensus_sensitive_lines": 11,
+      "detectable_by": [
+        "multi_validator_sim",
+        "live_testnet_only"
+      ],
+      "id": 3,
+      "judgment_added": true,
+      "name": "leader/validator equivalence logic"
+    },
+    {
+      "artifact": "contracts/consequence_sink.py (EXP-003, reused pattern)",
+      "consensus_sensitive_lines": 6,
+      "detectable_by": [
+        "direct_mode_tests",
+        "live_testnet_only"
+      ],
+      "id": 4,
+      "judgment_added": false,
+      "name": "deterministic post-consensus side effects"
+    },
+    {
+      "artifact": "tests/direct/ + mock_llm patterns",
+      "consensus_sensitive_lines": 0,
+      "detectable_by": [
+        "static_reasoning",
+        "direct_mode_tests"
+      ],
+      "id": 5,
+      "judgment_added": false,
+      "name": "direct-mode mocks and invariant tests"
+    },
+    {
+      "artifact": "gltest --network runs + validator rotation config",
+      "consensus_sensitive_lines": 0,
+      "detectable_by": [
+        "multi_validator_sim",
+        "live_testnet_only"
+      ],
+      "id": 6,
+      "judgment_added": false,
+      "name": "multi-validator network test"
+    },
+    {
+      "artifact": "contracts/consequence_parent.py emit(on=...) pattern",
+      "consensus_sensitive_lines": 8,
+      "detectable_by": [
+        "live_testnet_only"
+      ],
+      "id": 7,
+      "judgment_added": false,
+      "name": "accepted/finalized child-message behavior"
+    },
+    {
+      "artifact": "contracts/consequence_sink.py (attempts/applied counters)",
+      "consensus_sensitive_lines": 9,
+      "detectable_by": [
+        "live_testnet_only"
+      ],
+      "id": 8,
+      "judgment_added": false,
+      "name": "appeal-safe/idempotent receiving logic"
+    }
+  ],
+  "total_consensus_sensitive_lines": 48
+}
