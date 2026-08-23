@@ -54,7 +54,7 @@ jobs:
       # the v0.29 pin because newer direct-mode has a calldata regression.
       - run: >-
           pip install --force-reinstall
-          "genlayer-py @ git+https://github.com/genlayerlabs/genlayer-py@dd25ef7f43e99a14b8fe42a64e01374845ad4d2d"
+          "genlayer-py @ git+https://github.com/genlayerlabs/genlayer-py@ec7cab9"
           "genlayer-test @ git+https://github.com/genlayerlabs/genlayer-testing-suite@60f850f0dabd06ae019f19bda3634864c0ab7575"
 
       - name: Prepare ephemeral gltest environment
