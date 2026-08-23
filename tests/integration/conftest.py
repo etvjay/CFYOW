@@ -10,6 +10,9 @@ This conftest installs a None-safe shim before any test runs.
 
 from __future__ import annotations
 
+import os
+import time as _time
+
 import gltest.utils as _gltest_utils
 
 
@@ -38,3 +41,38 @@ try:  # pragma: no cover - import shape varies across gltest revisions
         _factory_mod.extract_contract_address = _extract_contract_address_none_safe
 except ImportError:
     pass
+
+
+from gltest.contracts.contract_factory import ContractFactory as _CF
+from gltest.exceptions import DeploymentError as _DE
+
+_CAPACITY_RETRY_ENV = "EXP003_DEPLOY_RETRIES"
+
+
+def _install_capacity_retry() -> None:
+    """Retry contract deploys when Bradbury rejects with gas rate limit (-32005)."""
+    if getattr(_CF, "_cfyow_capacity_retry", False):
+        return
+    original = _CF.deploy
+
+    def deploy_with_retry(self, *args, **kwargs):
+        attempts = int(os.getenv(_CAPACITY_RETRY_ENV, "8"))
+        delay_s = float(os.getenv("EXP003_DEPLOY_RETRY_DELAY_S", "2"))
+        last_exc = None
+        for attempt in range(max(1, attempts)):
+            try:
+                return original(self, *args, **kwargs)
+            except (_DE, Exception) as exc:
+                message = str(exc)
+                if "-32005" not in message and "capacity" not in message.lower():
+                    raise
+                last_exc = exc
+                _time.sleep(delay_s * (attempt + 1))
+        raise last_exc
+
+    deploy_with_retry.__doc__ = original.__doc__
+    _CF.deploy = deploy_with_retry
+    _CF._cfyow_capacity_retry = True
+
+
+_install_capacity_retry()
