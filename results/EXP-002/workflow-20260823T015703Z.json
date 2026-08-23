@@ -1,0 +1,27 @@
+{
+  "interpretation": {
+    "status": "UNREVIEWED"
+  },
+  "log": [
+    {
+      "actor": "provider",
+      "kind": "schema_violation",
+      "latency_ms": 5302,
+      "payload": {
+        "error": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+        "raw": "{\n  \"terms\": \"I will deliver a working /health endpoint that returns HTTP 200 and {\\\"status\\\": \\\"ok\\\"} in the chosen technology stack (e.g., Node.js/Express) within 2 hours, including the source code, a minimal unit test, and a short README explaining how to run and verify the endpoint.\",\n  \"commit\""
+      },
+      "ts": "2026-08-23T01:57:03.523791+00:00"
+    }
+  ],
+  "metrics": {
+    "avg_llm_latency_ms": 5302,
+    "event_count": 1,
+    "llm_calls": 0,
+    "max_llm_latency_ms": 5302,
+    "schema_fields_observed": [],
+    "schema_violations": 1
+  },
+  "outcome": "failed_proposal",
+  "schema_version": "cfyow.exp002.workflow.v1"
+}

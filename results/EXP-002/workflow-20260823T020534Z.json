@@ -1,0 +1,74 @@
+{
+  "interpretation": {
+    "status": "UNREVIEWED"
+  },
+  "log": [
+    {
+      "actor": "provider",
+      "kind": "propose",
+      "latency_ms": 5917,
+      "payload": {
+        "terms": "I will deliver a static uptime status page (HTML) indicating the service is operational, hosted at a specified URL (e.g., https://status.example.com), and provide a JSON API endpoint /status returning {\"status\":\"operational\"}. Delivery will be completed within 2 hours of acceptance."
+      },
+      "ts": "2026-08-23T02:05:27.100031+00:00"
+    },
+    {
+      "actor": "requester",
+      "kind": "accept",
+      "latency_ms": 4843,
+      "payload": {
+        "accept": true,
+        "reason": "The proposal includes concrete deliverables (HTML status page and JSON API endpoint) and a clear timeline (2 hours)."
+      },
+      "ts": "2026-08-23T02:05:31.943418+00:00"
+    },
+    {
+      "actor": "provider",
+      "kind": "commit",
+      "payload": {
+        "digest": "060972460b534428bcc498e8be1746dd50b96cef680301d320f61bd3a6307f07"
+      },
+      "ts": "2026-08-23T02:05:31.943510+00:00"
+    },
+    {
+      "actor": "provider",
+      "kind": "submit_evidence",
+      "payload": {
+        "evidence_uri": "sha256:060972460b534428bcc498e8be1746dd50b96cef680301d320f61bd3a6307f07"
+      },
+      "ts": "2026-08-23T02:05:31.943520+00:00"
+    },
+    {
+      "actor": "evaluator",
+      "kind": "evaluate",
+      "latency_ms": 2129,
+      "payload": {
+        "reason": "The submitted evidence only provides a SHA\u2011256 hash and a confirmation that the commit digest matches the submission; it contains no details showing an actual uptime status page was delivered or that the service status is displayed as operational. Without explicit evidence of the status page content or its status, the objective is not demonstrably met.",
+        "verdict": "unsatisfied"
+      },
+      "ts": "2026-08-23T02:05:34.072205+00:00"
+    },
+    {
+      "actor": "interface",
+      "kind": "settle",
+      "payload": {
+        "outcome": "rejected"
+      },
+      "ts": "2026-08-23T02:05:34.072266+00:00"
+    }
+  ],
+  "metrics": {
+    "avg_llm_latency_ms": 4296,
+    "event_count": 6,
+    "llm_calls": 3,
+    "max_llm_latency_ms": 5917,
+    "schema_fields_observed": [
+      "accept",
+      "reason",
+      "verdict"
+    ],
+    "schema_violations": 0
+  },
+  "outcome": "rejected",
+  "schema_version": "cfyow.exp002.workflow.v1"
+}
