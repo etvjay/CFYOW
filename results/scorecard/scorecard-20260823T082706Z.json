@@ -1,0 +1,83 @@
+{
+  "generated_at": "2026-08-23T08:27:06.741530+00:00",
+  "policy": "Score evidence quality separately from thesis support.",
+  "rows": [
+    {
+      "artifacts": [
+        "contracts/different_minds.py",
+        "contracts/different_minds_judged.py",
+        "experiments/EXP-002-different-minds-one-interface/",
+        "scaled-20260823T021245Z.json"
+      ],
+      "blockers": [
+        "GenLayer execution path for arm C (watchdog-gated)"
+      ],
+      "evidence_grade": "RECORDED",
+      "experiment": "EXP-002",
+      "finding": "Centralized LLM judge discriminated all 7 scenario classes (accuracy 7/7); deterministic predicate settled every scenario identically regardless of ground truth. GenLayer consensus arm contract-ready, pending network.",
+      "n_runs": 7,
+      "question": "Can heterogeneous agents coordinate through one shared adjudicated interface without an orchestrator?",
+      "supports_thesis": null
+    },
+    {
+      "artifacts": [
+        "experiments/EXP-004-autonomy-budget/run_budget.py"
+      ],
+      "blockers": [
+        "live child-tx measurement needs GenLayer execution path"
+      ],
+      "evidence_grade": "SIMULATED",
+      "experiment": "EXP-004",
+      "finding": "Monolithic architecture autonomy ratio 0.67 (deepest run 3) vs chained 0.33 (deepest run 1). Architecture trades autonomy against explicit authority boundaries; NEW_INFORMATION and FINALITY_WAIT bound autonomy in both designs.",
+      "n_runs": 0,
+      "question": "How much consequential progression survives one external trigger?",
+      "supports_thesis": null
+    },
+    {
+      "artifacts": [
+        "experiments/EXP-005-devx-under-judgment/run_devx.py",
+        "docs/upstream-issue-draft.md"
+      ],
+      "blockers": [],
+      "evidence_grade": "REPRODUCED",
+      "experiment": "EXP-005",
+      "finding": "7/8 real incidents were upstream tooling bugs; 5/8 were only catchable on the live network; cheap surfaces caught none. Judgment tasks concentrate all consensus-sensitive LOC.",
+      "n_runs": 8,
+      "question": "Does judgment-bearing programmability add disproportionate DevX burden?",
+      "supports_thesis": true
+    },
+    {
+      "artifacts": [
+        "contracts/judgment_boundary.py",
+        "baselines/"
+      ],
+      "blockers": [
+        "Bradbury execution path"
+      ],
+      "evidence_grade": "SIMULATED",
+      "experiment": "EXP-001",
+      "finding": "Contract + baselines merged to main; CI green. Live benchmark run pending.",
+      "n_runs": 0,
+      "question": "What moves into consensus vs deterministic/centralized adjudication?",
+      "supports_thesis": null
+    },
+    {
+      "artifacts": [
+        "contracts/consequence_*.py",
+        ".github/workflows/exp003-network.yml",
+        "docs/upstream-issue-draft.md"
+      ],
+      "blockers": [
+        "Bradbury capacity",
+        "upstream gltest/genlayer-py release pairing"
+      ],
+      "evidence_grade": "SIMULATED",
+      "experiment": "EXP-003",
+      "finding": "Full harness merged (consequence contracts, dataset, integration tests). Bradbury runs blocked by testnet capacity + unreleased receipt handling; harness fixes landed, watchdog armed.",
+      "n_runs": 0,
+      "question": "What breaks when downstream actions rely on accepted rather than finalized state?",
+      "supports_thesis": null
+    }
+  ],
+  "schema_version": "cfyow.scorecard.v1"
+}
