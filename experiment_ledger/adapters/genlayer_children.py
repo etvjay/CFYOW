@@ -27,11 +27,23 @@ def capture_child_lineage(client: Any, transaction_hash: str) -> dict[str, Any]:
             "transaction": child_tx,
         })
 
+    def _message_dict(message):
+        """Normalize a message entry; newer genlayer-py returns (id, payload) tuples."""
+        if isinstance(message, dict):
+            return message
+        if isinstance(message, (tuple, list)) and message:
+            for part in message:
+                if isinstance(part, dict):
+                    return part
+        return {}
+
     accepted_messages = [
-        message for message in messages if bool(message.get("onAcceptance", False))
+        message for message in messages
+        if bool(_message_dict(message).get("onAcceptance", False))
     ]
     finalized_messages = [
-        message for message in messages if not bool(message.get("onAcceptance", False))
+        message for message in messages
+        if not bool(_message_dict(message).get("onAcceptance", False))
     ]
 
     return {
