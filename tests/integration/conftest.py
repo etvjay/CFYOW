@@ -20,6 +20,10 @@ def _extract_contract_address_none_safe(receipt) -> str:
     data = receipt.get("data") if isinstance(receipt, dict) else None
     if isinstance(data, dict) and "contract_address" in data:
         return data["contract_address"]
+    # Bradbury deploy receipts carry the deployed address as `recipient`
+    recipient = receipt.get("recipient") if isinstance(receipt, dict) else None
+    if recipient:
+        return str(recipient)
     raise ValueError("Transaction receipt missing contract address")
 
 
