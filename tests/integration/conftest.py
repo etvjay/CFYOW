@@ -76,3 +76,30 @@ def _install_capacity_retry() -> None:
 
 
 _install_capacity_retry()
+
+
+def _install_default_account_on_build() -> None:
+    """Ensure Contract instances carry a default account for read (gen_call) calls.
+
+    gltest 60f850f builds contracts with account=None when deploy() is called without
+    an explicit account; Bradbury read calls then fail with 'No account provided'.
+    """
+    if getattr(_CF, "_cfyow_account_fix", False):
+        return
+    original = _CF.build_contract
+
+    def build_contract_with_account(self, contract_address, account=None):
+        if account is None:
+            try:
+                from gltest import get_default_account
+
+                account = get_default_account()
+            except Exception:
+                pass
+        return original(self, contract_address=contract_address, account=account)
+
+    _CF.build_contract = build_contract_with_account
+    _CF._cfyow_account_fix = True
+
+
+_install_default_account_on_build()
