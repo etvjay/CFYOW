@@ -1,0 +1,112 @@
+{
+  "generated_at": "2026-08-23T17:42:41.166336+00:00",
+  "interpretation": {
+    "status": "UNREVIEWED"
+  },
+  "runs": [
+    {
+      "A": {
+        "arm": "A_deterministic",
+        "downstream_depending": [
+          "contract_state"
+        ],
+        "llm_calls": 0,
+        "note": "judgment happened before the interface; the contract only checks pre-structured facts",
+        "outcome": "satisfied",
+        "trust_locations": [
+          "upstream_attestor"
+        ],
+        "wall_ms": 0
+      },
+      "B": {
+        "arm": "B_centralized_adjudicator",
+        "backend": "live LLM",
+        "downstream_depending": [
+          "contract_state",
+          "adjudicator_honesty"
+        ],
+        "llm_calls": 1,
+        "note": "one authority's interpretation is trusted without verification",
+        "outcome": "satisfied",
+        "reason": "The demonstration explicitly shows a responsive layout and a fully completed mobile checkout flow on multiple devices, directly meeting the specification's requirement.",
+        "trust_locations": [
+          "adjudicator_authority"
+        ],
+        "wall_ms": 1643
+      },
+      "C": {
+        "appeal_capable": true,
+        "arm": "C_genlayer_consensus",
+        "downstream_depending": [
+          "accepted_then_finalized_contract_state"
+        ],
+        "outcome": "EXECUTED_IN_SIMULATOR",
+        "test_artifact": "tests/direct/test_judgment_boundary.py (CI green)",
+        "trust_locations": [
+          "validator_quorum",
+          "equivalence_principle",
+          "greyboxed_models"
+        ],
+        "verdict_source": "leader proposes -> validators verify equivalence"
+      },
+      "divergence": false,
+      "objective": "Deliver a responsive storefront with mobile checkout.",
+      "scenario": "m1"
+    },
+    {
+      "A": {
+        "arm": "A_deterministic",
+        "downstream_depending": [
+          "contract_state"
+        ],
+        "llm_calls": 0,
+        "note": "judgment happened before the interface; the contract only checks pre-structured facts",
+        "outcome": "unsatisfied",
+        "trust_locations": [
+          "upstream_attestor"
+        ],
+        "wall_ms": 0
+      },
+      "B": {
+        "arm": "B_centralized_adjudicator",
+        "backend": "live LLM",
+        "downstream_depending": [
+          "contract_state",
+          "adjudicator_honesty"
+        ],
+        "llm_calls": 1,
+        "note": "one authority's interpretation is trusted without verification",
+        "outcome": "unsatisfied",
+        "reason": "The specification required both a responsive desktop checkout and a responsive mobile checkout. While the desktop layout is responsive, the mobile checkout was explicitly deferred to the next sprint a",
+        "trust_locations": [
+          "adjudicator_authority"
+        ],
+        "wall_ms": 969
+      },
+      "C": {
+        "appeal_capable": true,
+        "arm": "C_genlayer_consensus",
+        "downstream_depending": [
+          "accepted_then_finalized_contract_state"
+        ],
+        "outcome": "EXECUTED_IN_SIMULATOR",
+        "test_artifact": "tests/direct/test_judgment_boundary.py (CI green)",
+        "trust_locations": [
+          "validator_quorum",
+          "equivalence_principle",
+          "greyboxed_models"
+        ],
+        "verdict_source": "leader proposes -> validators verify equivalence"
+      },
+      "divergence": false,
+      "objective": "Deliver responsive desktop AND mobile checkout.",
+      "scenario": "m2"
+    }
+  ],
+  "schema_version": "cfyow.exp001.judgment-boundary.v1",
+  "summary": {
+    "divergent_outcomes": 0,
+    "headline": "Deterministic baseline and centralized adjudicator disagree wherever pre-structured facts and free-form interpretation diverge \u2014 the boundary this experiment exists to map.",
+    "scenarios": 2
+  }
+}
