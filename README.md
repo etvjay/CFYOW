@@ -1,17 +1,20 @@
 # Can't Fake Your Own World (CFYOW)
 
-**A GenLayer research program on agentic coordination through adjudicated shared state.**
+**A GenLayer research program on coordination between independently governed agents.**
 
-Can independently governed AI agents — different models, owners, and policies — coordinate through a shared interface whose consequential state no single participant can rewrite? And does **decentralized judgment** (GenLayer's Optimistic Democracy) add coordination properties that deterministic escrow and centralized LLM judges don't already provide?
+The program asks two questions:
 
-This repo is organized to falsify, not confirm. Every claim carries evidence; every experiment has named falsifiers.
+1. Can agents with different models, owners, and policies coordinate through a shared interface whose consequential state cannot be unilaterally rewritten?
+2. Does decentralized judgment add something beyond deterministic state and a centralized LLM judge?
+
+The repository is organized to test these questions, not assume their answers. Each experiment names its falsifiers and records its evidence level.
 
 ## Status
 
 | Experiment | Question | Machinery | Evidence grade |
 |---|---|---|---|
 | EXP-001 Judgment Boundary | What moves into consensus vs deterministic/centralized adjudication? | ✅ three-way runner | SIMULATED |
-| EXP-002 Different Minds | Can heterogeneous agents coordinate via one interface alone? | ✅ three-arm harness + real LLM agents | VALIDATED |
+| EXP-002 Different Minds | Can heterogeneous agents coordinate via one interface alone? | ✅ three-arm harness + real LLM agents | REAL AGENT RUNS; decentralized comparison pending |
 | EXP-003 Accepted vs Finalized | What breaks when downstream relies on accepted state? | ✅ full harness + dataset | SIMULATED |
 | EXP-004 Autonomy Budget | How far can a workflow progress on one trigger? | ✅ transition classifier + budget meter | SIMULATED |
 | EXP-005 DevX Under Judgment | What does judgment-bearing programmability cost developers? | ✅ taxonomy + real incident log | REPRODUCED |
@@ -22,15 +25,15 @@ This repo is organized to falsify, not confirm. Every claim carries evidence; ev
 
 ### 1. Deterministic state coordinates but cannot verify
 
-Across 7 ground-truthed scenarios, a deterministic consequence interface settled every one "satisfied" — including fabricated claims. A centralized LLM judge scored 7/7 against hidden ground truth. Verification of judgment-dependent completion *requires judgment*; the open question is whether that judgment must be decentralized.
+Across seven ground-truthed scenarios, the deterministic consequence interface settled every scenario as "satisfied," including fabricated claims. A centralized LLM judge scored 7/7 against hidden ground truth. The result is narrow: verification of judgment-dependent completion requires judgment. The open question is whether that judgment needs to be decentralized.
 
 ### 2. Architecture trades autonomy against auditability
 
-The same workflow as a monolithic contract runs 67% of transitions autonomously after one trigger; as chained contracts only 33% — but every authority boundary becomes an explicit external trigger. `NEW_INFORMATION` and `FINALITY_WAIT` bound autonomy in both designs.
+The same workflow ran 67% of transitions autonomously as one contract and 33% as chained contracts. Chaining added explicit authority boundaries, but also required more external triggers. `NEW_INFORMATION` and `FINALITY_WAIT` limited both designs.
 
-### 3. The DevX burden is real and concentrated
+### 3. Judgment-bearing code increases development cost
 
-Eight build incidents: 7 upstream tooling bugs, 5 only detectable on the live network, zero caught by static reading or linting. Consensus-sensitive code concentrates entirely in judgment-bearing tasks.
+The build recorded eight incidents. Seven were upstream tooling bugs, and five appeared only on the live network. Static reading and linting did not catch those five cases. In this program, the consensus-sensitive work was concentrated in judgment-bearing tasks.
 
 Full analysis: [`research/synthesis/sprint-1-synthesis.md`](research/synthesis/sprint-1-synthesis.md)
 
